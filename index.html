@@ -18,7 +18,7 @@
 
     body {
       margin: 0;
-      background: #fff;
+      background: #ffffff;
       color: var(--ink);
       font-family: Arial, Helvetica, sans-serif;
     }
@@ -103,39 +103,38 @@
       transition: height 250ms ease;
     }
 
-    /*
-      Персонажи берутся из example.jpg.
-      Нужна исходная картинка размером 470 × 494.
-      Фигурная обрезка отключена.
-    */
-
     .avatar {
       position: absolute;
       bottom: 0;
       left: 50%;
+
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
 
       width: 174px;
       height: 202px;
 
       transform: translateX(-50%);
 
-      background-image: url("./example.jpg");
-      background-repeat: no-repeat;
-      background-size: 470px 494px;
+      z-index: 2;
+      pointer-events: none;
+    }
 
-      clip-path: none;
+    .avatar img {
+      display: block;
+
+      max-width: 100%;
+      max-height: 100%;
+
+      width: auto;
+      height: auto;
+
+      object-fit: contain;
+      object-position: center bottom;
+
       animation: none;
       transition: none;
-
-      z-index: 2;
-    }
-
-    .avatar.luigi {
-      background-position: -52px -238px;
-    }
-
-    .avatar.mario {
-      background-position: -257px -242px;
     }
 
     .name {
@@ -188,8 +187,13 @@
       border: 1px solid #c9dce5;
       border-radius: 8px;
 
-      background: #fff;
+      background: #ffffff;
       color: var(--ink);
+    }
+
+    input:focus {
+      outline: 2px solid #9bd8e4;
+      outline-offset: 1px;
     }
 
     button {
@@ -200,7 +204,7 @@
       border-radius: 9px;
 
       background: var(--ink);
-      color: #fff;
+      color: #ffffff;
 
       font-weight: 700;
       cursor: pointer;
@@ -247,6 +251,7 @@
 
     .hint {
       margin: 10px 0 0;
+
       color: #718795;
       text-align: center;
       font-size: 12px;
@@ -254,6 +259,7 @@
 
     .error {
       margin: 12px 0 0;
+
       color: #be3333;
       font-size: 13px;
       overflow-wrap: anywhere;
@@ -280,7 +286,7 @@
 <body>
   <main class="game">
 
-    <section class="arena">
+    <section class="arena" aria-label="Очки игроков">
       <ul id="players" class="players"></ul>
 
       <p id="empty" class="empty">
@@ -292,23 +298,27 @@
 
       <div id="setup">
         <div class="fields">
-          <label>
+
+          <label for="playerName">
             Имя
             <input
               id="playerName"
+              type="text"
               placeholder="Маша"
               maxlength="30"
             >
           </label>
 
-          <label>
+          <label for="roomName">
             Комната
             <input
               id="roomName"
+              type="text"
               value="party-1"
               maxlength="50"
             >
           </label>
+
         </div>
 
         <button id="join" type="button">
@@ -317,6 +327,7 @@
       </div>
 
       <div id="controls" class="hidden">
+
         <p id="status" class="status">
           Нажмите «Начать»
         </p>
@@ -341,8 +352,8 @@
       </div>
 
       <p id="error" class="error hidden" role="alert"></p>
-    </section>
 
+    </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -357,12 +368,30 @@
       const SUPABASE_KEY =
         "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
 
-      // При 100 очках шкала заполнена целиком.
+      // При 100 очках шкала заполнена полностью.
       const MAX_SCORE = 100;
 
+      // Порог начала громкого звука.
       const LOUD_START = 35;
+
+      // Порог окончания громкого звука.
       const LOUD_END = 25;
+
+      // Пауза между начислениями.
       const COOLDOWN_MS = 1000;
+
+      const CHARACTERS = [
+        {
+          name: "luigi",
+          image: "./luigi.png",
+          color: "#d3f77d"
+        },
+        {
+          name: "mario",
+          image: "./mario.png",
+          color: "#dc9146"
+        }
+      ];
 
       const $ = id => document.getElementById(id);
 
@@ -404,7 +433,10 @@
       }
 
       if (!window.supabase?.createClient) {
-        showError("Не загрузилась библиотека Supabase.");
+        showError(
+          "Не загрузилась библиотека Supabase. " +
+          "Проверьте интернет и обновите страницу."
+        );
         return;
       }
 
@@ -414,7 +446,9 @@
           SUPABASE_KEY
         );
       } catch (error) {
-        showError(message(error));
+        showError(
+          "Ошибка подключения: " + message(error)
+        );
         return;
       }
 
@@ -423,7 +457,10 @@
       $("stop").addEventListener("click", stop);
 
       $("playerName").addEventListener("keydown", event => {
-        if (event.key === "Enter" && !$("join").disabled) {
+        if (
+          event.key === "Enter" &&
+          !$("join").disabled
+        ) {
           joinGame();
         }
       });
@@ -432,6 +469,7 @@
         if ($("join").disabled) return;
 
         const name = $("playerName").value.trim();
+
         const room =
           $("roomName").value.trim() || "party-1";
 
@@ -446,6 +484,7 @@
         $("join").textContent = "Подключение…";
 
         try {
+          // Существующему игроку очки не сбрасываются.
           const { error } = await db
             .from("players")
             .upsert(
@@ -500,6 +539,7 @@
             clearInterval(refreshTimer);
           }
 
+          // Резервное обновление при сбое Realtime.
           refreshTimer = setInterval(() => {
             loadScores();
           }, 5000);
@@ -536,7 +576,8 @@
 
           if (version === loadVersion) {
             showError(
-              "Ошибка загрузки очков: " + message(error)
+              "Ошибка загрузки очков: " +
+              message(error)
             );
           }
         }
@@ -567,8 +608,28 @@
 
         const avatar = document.createElement("div");
         avatar.className = "avatar";
-        avatar.setAttribute("aria-hidden", "true");
 
+        const image = document.createElement("img");
+        image.alt = "";
+        image.draggable = false;
+
+        image.addEventListener("error", () => {
+          // Не оставляем на месте лица значок
+          // сломанного изображения.
+          image.style.visibility = "hidden";
+
+          showError(
+            "Не найдена картинка персонажа. " +
+            "Загрузите mario.png и luigi.png " +
+            "рядом с index.html."
+          );
+        });
+
+        image.addEventListener("load", () => {
+          image.style.visibility = "visible";
+        });
+
+        avatar.appendChild(image);
         stage.append(track, avatar);
 
         const label = document.createElement("div");
@@ -582,7 +643,7 @@
           item,
           score,
           fill,
-          avatar,
+          image,
           character: null
         };
       }
@@ -618,27 +679,31 @@
             cards.set(player.name, card);
           }
 
-          const green = index % 2 === 0;
-          const character = green ? "luigi" : "mario";
+          const character =
+            CHARACTERS[index % CHARACTERS.length];
 
           const score = Number(player.score) || 0;
 
           const percent = Math.max(
             0,
-            Math.min(100, score / MAX_SCORE * 100)
+            Math.min(
+              100,
+              score / MAX_SCORE * 100
+            )
           );
 
-          // Не переназначаем персонажа без необходимости.
-          if (card.character !== character) {
-            card.character = character;
+          // Картинка меняется только при смене
+          // назначенного персонажа, не при каждом очке.
+          if (card.character !== character.name) {
+            card.character = character.name;
 
             card.item.style.setProperty(
               "--fill",
-              green ? "#d3f77d" : "#dc9146"
+              character.color
             );
 
-            card.avatar.className =
-              "avatar " + character;
+            card.image.style.visibility = "hidden";
+            card.image.src = character.image;
           }
 
           const scoreText = String(score);
@@ -647,9 +712,10 @@
             card.score.textContent = scoreText;
           }
 
-          // Не перемещаем карточку, если она уже
-          // находится на правильном месте.
-          const currentItem = container.children[index];
+          // Не перемещаем карточку повторно,
+          // если она уже стоит на своём месте.
+          const currentItem =
+            container.children[index];
 
           if (currentItem !== card.item) {
             container.insertBefore(
@@ -697,7 +763,8 @@
 
           if (!AudioContextClass) {
             throw new Error(
-              "Браузер не поддерживает обработку звука."
+              "Браузер не поддерживает " +
+              "обработку звука."
             );
           }
 
@@ -729,13 +796,21 @@
 
           if (error.name === "NotAllowedError") {
             showError(
-              "Микрофон запрещён. Разрешите его " +
-              "в браузере. Если игра открыта в Meleto, " +
-              "проверьте доступ к микрофону внутри iframe."
+              "Доступ к микрофону запрещён. " +
+              "Разрешите его в браузере. " +
+              "Если игра открыта в Meleto, " +
+              "проверьте разрешение микрофона " +
+              "для iframe."
+            );
+          } else if (error.name === "NotFoundError") {
+            showError(
+              "Микрофон не найден. " +
+              "Проверьте его подключение."
             );
           } else {
             showError(
-              "Ошибка микрофона: " + message(error)
+              "Ошибка микрофона: " +
+              message(error)
             );
           }
         } finally {
@@ -745,7 +820,8 @@
       }
 
       function analyse() {
-        const data = new Uint8Array(analyser.fftSize);
+        const data =
+          new Uint8Array(analyser.fftSize);
 
         function tick() {
           if (!running || !analyser) return;
@@ -759,18 +835,24 @@
             sum += value * value;
           }
 
-          const rms = Math.sqrt(sum / data.length);
+          const rms = Math.sqrt(
+            sum / data.length
+          );
 
           const level = Math.min(
             100,
             Math.round(rms * 300)
           );
 
-          $("meterFill").style.width = level + "%";
+          $("meterFill").style.width =
+            level + "%";
 
           if (level >= LOUD_START) {
             loud = true;
-          } else if (loud && level < LOUD_END) {
+          } else if (
+            loud &&
+            level < LOUD_END
+          ) {
             loud = false;
 
             const now = performance.now();
@@ -861,7 +943,9 @@
           const oldContext = context;
           context = null;
 
-          oldContext.close().catch(console.error);
+          oldContext
+            .close()
+            .catch(console.error);
         }
 
         analyser = null;
@@ -873,19 +957,6 @@
         $("status").textContent =
           "Микрофон выключен. Очки сохранены.";
       }
-
-      // Загружаем изображение один раз для проверки.
-      const artwork = new Image();
-
-      artwork.onerror = () => {
-        showError(
-          "Не найдена картинка example.jpg. " +
-          "Загрузите исходный образец в корень " +
-          "репозитория под этим именем."
-        );
-      };
-
-      artwork.src = "./example.jpg";
 
       window.addEventListener("pagehide", () => {
         stop();
