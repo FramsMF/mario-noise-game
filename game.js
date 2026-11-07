@@ -1,6 +1,5 @@
-
-const SUPABASE_URL = "https://juchryyubxkuapnaqelj.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
+const SUPABASE_URL = "https://ВАШ_ПРОЕКТ.supabase.co";
+const SUPABASE_ANON_KEY = "ВАШ_PUBLIC_ANON_KEY";
 
 const ROOM = "party-1";
 const LOUD_START = 35;
@@ -49,7 +48,7 @@ async function joinGame() {
   hideError();
   playerName = name;
 
-  const { error } = await supabase
+  const { error } = await db
     .from("players")
     .upsert(
       {
@@ -61,6 +60,7 @@ async function joinGame() {
     );
 
   if (error) {
+    console.error("Supabase error:", error);
     showError("Не удалось войти: " + error.message);
     return;
   }
@@ -105,6 +105,7 @@ async function startListening() {
 
     listenToMicrophone();
   } catch (err) {
+    console.error("Microphone error:", err);
     showError("Нет доступа к микрофону: " + err.message);
   }
 }
@@ -150,7 +151,7 @@ function listenToMicrophone() {
 }
 
 async function addPoint() {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("players")
     .select("score")
     .eq("room", roomName)
@@ -158,17 +159,23 @@ async function addPoint() {
     .single();
 
   if (error || !data) {
+    console.error("Score fetch error:", error);
     showError("Не удалось получить очки.");
     return;
   }
 
   const newScore = data.score + 1;
 
-  await supabase
+  const { error: updateError } = await db
     .from("players")
     .update({ score: newScore })
     .eq("room", roomName)
     .eq("name", playerName);
+
+  if (updateError) {
+    console.error("Score update error:", updateError);
+    showError("Не удалось сохранить очко.");
+  }
 }
 
 function stopListening() {
@@ -198,13 +205,14 @@ function stopListening() {
 }
 
 async function loadScores() {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("players")
     .select("name, score")
     .eq("room", roomName)
     .order("score", { ascending: false });
 
   if (error) {
+    console.error("Load scores error:", error);
     showError("Не удалось загрузить очки: " + error.message);
     return;
   }
@@ -213,7 +221,7 @@ async function loadScores() {
 }
 
 function subscribeToScores() {
-  supabase
+  db
     .channel("scores-" + roomName)
     .on(
       "postgres_changes",
