@@ -1,5 +1,5 @@
-const SUPABASE_URL = "https://ВАШ_ПРОЕКТ.supabase.co";
-const SUPABASE_ANON_KEY = "ВАШ_PUBLIC_ANON_KEY";
+const SUPABASE_URL = "hhttps://juchryyubxkuapnaqelj.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
 
 const ROOM = "party-1";
 const LOUD_START = 35;
