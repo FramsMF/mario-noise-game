@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Шумная вечеринка</title>
 
 <style>
@@ -28,7 +29,17 @@
   }
 
   .game {
-    padding: 18px 12px 28px;
+    padding: 16px 12px 28px;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    max-width: 450px;
+    margin: 0 auto 18px;
+    padding: 8px 0;
+    background: #fff;
   }
 
   .room-title {
@@ -39,6 +50,7 @@
 
   .arena {
     overflow-x: auto;
+    padding-bottom: 8px;
   }
 
   .players {
@@ -46,8 +58,10 @@
     justify-content: center;
     align-items: flex-start;
     gap: 35px;
+
     width: max-content;
     min-width: 100%;
+
     margin: 0;
     padding: 0 10px;
     list-style: none;
@@ -76,9 +90,11 @@
     position: absolute;
     top: 0;
     left: 50%;
+
     width: 94px;
     height: 280px;
     padding: 7px;
+
     transform: translateX(-50%);
     background: var(--track);
   }
@@ -93,6 +109,7 @@
     right: 0;
     bottom: 0;
     left: 0;
+
     height: 0;
     background: var(--color);
     transition: height 250ms ease;
@@ -103,31 +120,43 @@
     right: 0;
     bottom: 0;
     left: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
+
     width: 174px;
     height: 202px;
+
     z-index: 2;
   }
 
   .avatar img {
+    position: absolute;
+    inset: 0;
+
     display: block;
     width: 100%;
     height: 100%;
+
     object-fit: contain;
     object-position: center bottom;
   }
 
   .avatar-fallback {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     width: 145px;
     height: 145px;
+
+    transform: translateX(-50%);
+
     border: 3px solid var(--ink);
     border-radius: 50%;
-    background: white;
+    background: #fff;
+
     font-size: 16px;
     font-weight: 700;
   }
@@ -135,15 +164,17 @@
   .name {
     margin-top: 7px;
     overflow: hidden;
+
     font-size: 34px;
     line-height: 42px;
     font-weight: 800;
+
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .empty {
-    padding: 55px 12px;
+    padding: 50px 12px;
     text-align: center;
     color: #718795;
   }
@@ -152,6 +183,7 @@
     width: min(100%, 450px);
     margin: 24px auto 0;
     padding: 18px;
+
     border: 1px solid #dce8ee;
     border-radius: 16px;
     background: #f5fafc;
@@ -174,8 +206,10 @@
     width: 100%;
     margin-top: 6px;
     padding: 11px;
+
     border: 1px solid #c8dce6;
     border-radius: 9px;
+
     background: #fff;
     color: var(--ink);
   }
@@ -190,14 +224,16 @@
 
   .choices {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
   }
 
   .choice {
-    padding: 10px;
+    padding: 7px 4px;
+
     border: 3px solid transparent;
     border-radius: 12px;
+
     background: #fff;
     color: var(--ink);
     cursor: pointer;
@@ -211,21 +247,22 @@
   .choice img {
     display: block;
     width: 100%;
-    height: 110px;
+    height: 85px;
     margin-bottom: 7px;
     object-fit: contain;
   }
 
   .choice span {
     display: block;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
   }
 
   .choice .image-warning {
-    padding: 20px 2px;
+    padding: 10px 2px;
     color: #bd3030;
-    font-size: 12px;
+    font-size: 10px;
+    overflow-wrap: anywhere;
   }
 
   .actions {
@@ -237,10 +274,13 @@
   .action {
     flex: 1;
     padding: 12px;
+
     border: 0;
     border-radius: 10px;
+
     background: #279e45;
     color: #fff;
+
     font-weight: 700;
     cursor: pointer;
   }
@@ -250,8 +290,8 @@
   }
 
   #watch {
+    display: block;
     width: 100%;
-    margin-top: 14px;
     background: var(--ink);
   }
 
@@ -280,6 +320,7 @@
     height: 8px;
     margin-top: 12px;
     overflow: hidden;
+
     border-radius: 99px;
     background: #dce8ee;
   }
@@ -318,12 +359,22 @@
     .fields {
       grid-template-columns: 1fr;
     }
+
+    .choices {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 </style>
 </head>
 
 <body>
 <main class="game">
+
+  <div class="topbar">
+    <button id="watch" class="action" type="button" disabled>
+      Показать очки игроков
+    </button>
+  </div>
 
   <p id="roomTitle" class="room-title" hidden></p>
 
@@ -340,12 +391,22 @@
     <div class="fields">
       <label id="nameField">
         Имя игрока
-        <input id="name" placeholder="Маша" maxlength="30">
+        <input
+          id="name"
+          type="text"
+          placeholder="Маша"
+          maxlength="30"
+        >
       </label>
 
       <label>
         Комната
-        <input id="room" value="party-1" maxlength="50">
+        <input
+          id="room"
+          type="text"
+          value="party-1"
+          maxlength="50"
+        >
       </label>
     </div>
 
@@ -364,10 +425,6 @@
       </button>
     </div>
 
-    <button id="watch" class="action" type="button" disabled>
-      Показать очки игроков
-    </button>
-
     <p id="status" class="status">Подключение…</p>
     <p id="connection" class="connection"></p>
 
@@ -377,11 +434,11 @@
 
     <p id="hint" class="hint">
       Один громкий всплеск — одно очко.
-      Обновление страницы в режиме игрока обнуляет его результат.
     </p>
 
     <p id="error" class="error" role="alert"></p>
   </section>
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -403,16 +460,36 @@
   const LOUD_END = 25;
   const COOLDOWN_MS = 1000;
 
+  // Для коротких пауз внутри одного звука.
+  const SILENCE_MS = 180;
+
   const AVATARS = {
     luigi: {
       label: "Луиджи",
       color: "#cbf477",
-      image: "./luigi.png"
+      image: "./luigi.png",
+      talkingImage: "./luigi2.png"
     },
+
     mario: {
       label: "Марио",
       color: "#e69a50",
-      image: "./mario.png"
+      image: "./mario.png",
+      talkingImage: "./mario2.png"
+    },
+
+    peach: {
+      label: "Пич",
+      color: "#f5acd4",
+      image: "./peach.png",
+      talkingImage: "./peach2.png"
+    },
+
+    yoshi: {
+      label: "Йоши",
+      color: "#79d8a0",
+      image: "./Yoshi.png",
+      talkingImage: "./yoshi2.png"
     }
   };
 
@@ -433,8 +510,15 @@
   let stream = null;
   let analyser = null;
   let frame = null;
+
   let loud = false;
+  let silenceSince = null;
   let lastPoint = -Infinity;
+
+  let desiredLoud = false;
+  let publishedLoud = false;
+  let publishingLoud = false;
+  let soundRetry = null;
 
   let channel = null;
   let timer = null;
@@ -442,6 +526,7 @@
   let loadVersion = 0;
 
   const cards = new Map();
+  const preloadedImages = [];
 
   function showError(error) {
     console.error(error);
@@ -457,7 +542,17 @@
     if (Object.prototype.hasOwnProperty.call(AVATARS, key)) {
       return key;
     }
+
     return key === "red" ? "mario" : "luigi";
+  }
+
+  // Предзагрузка обычных картинок и открытых ртов.
+  for (const avatar of Object.values(AVATARS)) {
+    for (const path of [avatar.image, avatar.talkingImage]) {
+      const image = new Image();
+      image.src = path;
+      preloadedImages.push(image);
+    }
   }
 
   function saveSession() {
@@ -466,7 +561,10 @@
       JSON.stringify({
         mode,
         name: identity?.name || "",
-        room: activeRoom || $("room").value.trim() || "party-1",
+        room:
+          activeRoom ||
+          $("room").value.trim() ||
+          "party-1",
         avatar: selectedAvatar
       })
     );
@@ -485,7 +583,8 @@
 
       const warning = document.createElement("span");
       warning.className = "image-warning";
-      warning.textContent = "Не найден файл " + avatar.image;
+      warning.textContent =
+        "Не найден файл " + avatar.image;
       warning.hidden = true;
 
       image.addEventListener("error", () => {
@@ -501,7 +600,10 @@
       button.append(image, warning, label);
 
       button.addEventListener("click", () => {
-        if (!ready || busy || running || saving || mode === "watch") {
+        if (
+          !ready || busy || running ||
+          saving || mode === "watch"
+        ) {
           return;
         }
 
@@ -509,7 +611,7 @@
         updateControls();
 
         $("status").textContent =
-          "Выбран " + avatar.label +
+          "Выбран персонаж: " + avatar.label +
           ". Нажмите «Начать», чтобы применить.";
       });
 
@@ -526,12 +628,14 @@
     $("meterSection").hidden = watching;
 
     $("start").disabled =
-      !ready || busy || running || saving || watching;
+      !ready || busy || running ||
+      saving || publishingLoud || watching;
 
     $("stop").disabled = !running;
 
     $("watch").disabled =
-      !ready || busy || running || saving;
+      !ready || busy || running ||
+      saving || publishingLoud;
 
     $("watch").textContent = watching
       ? "Вернуться к игре"
@@ -541,7 +645,8 @@
       !ready || busy || running || Boolean(identity);
 
     $("room").disabled =
-      !ready || busy || running || Boolean(identity) || watching;
+      !ready || busy || running ||
+      Boolean(identity) || watching;
 
     document.querySelectorAll(".choice").forEach(button => {
       button.setAttribute(
@@ -550,14 +655,16 @@
       );
 
       button.disabled =
-        !ready || busy || running || saving || watching;
+        !ready || busy || running ||
+        saving || watching;
     });
 
     $("hint").textContent = watching
-      ? "Режим табло: микрофон выключен. " +
+      ? "Общее табло: микрофон выключен. " +
         "Обновление страницы не сбрасывает результаты."
       : "Один громкий всплеск — одно очко. " +
-        "Обновление страницы в режиме игрока обнуляет его результат.";
+        "Обновление страницы в режиме игрока " +
+        "обнуляет его результат.";
 
     $("roomTitle").hidden = !activeRoom;
     $("roomTitle").textContent = activeRoom
@@ -570,8 +677,159 @@
     cards.clear();
     $("players").replaceChildren();
     $("empty").hidden = false;
+
     $("empty").textContent =
       "Начните игру или откройте табло комнаты";
+  }
+
+  function updateCardMouth(card, mouthOpen) {
+    card.mouthOpen = Boolean(mouthOpen);
+
+    const showTalking =
+      card.mouthOpen && !card.talkingFailed;
+
+    card.normalImage.hidden =
+      card.normalFailed || showTalking;
+
+    card.talkingImage.hidden = !showTalking;
+
+    card.fallback.hidden =
+      !(card.normalFailed && !showTalking);
+  }
+
+  function applyAvatar(card, key) {
+    const avatar = AVATARS[key];
+
+    card.avatarKey = key;
+    card.normalFailed = false;
+    card.talkingFailed = false;
+
+    const normal = document.createElement("img");
+    normal.alt = avatar.label;
+    normal.draggable = false;
+
+    const talking = document.createElement("img");
+    talking.alt = avatar.label;
+    talking.draggable = false;
+    talking.hidden = true;
+
+    const fallback = document.createElement("span");
+    fallback.className = "avatar-fallback";
+    fallback.textContent = avatar.label;
+    fallback.hidden = true;
+
+    card.normalImage = normal;
+    card.talkingImage = talking;
+    card.fallback = fallback;
+
+    normal.addEventListener("error", () => {
+      if (card.normalImage !== normal) return;
+
+      card.normalFailed = true;
+      updateCardMouth(card, card.mouthOpen);
+
+      showError(
+        new Error("Не найдена картинка " + avatar.image)
+      );
+    });
+
+    talking.addEventListener("error", () => {
+      if (card.talkingImage !== talking) return;
+
+      card.talkingFailed = true;
+      updateCardMouth(card, card.mouthOpen);
+
+      showError(
+        new Error(
+          "Не найдена картинка открытого рта: " +
+          avatar.talkingImage
+        )
+      );
+    });
+
+    normal.src = avatar.image;
+    talking.src = avatar.talkingImage;
+
+    card.avatar.replaceChildren(
+      normal,
+      talking,
+      fallback
+    );
+
+    card.item.style.setProperty(
+      "--color",
+      avatar.color
+    );
+
+    updateCardMouth(card, false);
+  }
+
+  function showOwnMouth(value) {
+    if (!identity) return;
+
+    const card = cards.get(identity.name);
+
+    if (card) {
+      updateCardMouth(card, value);
+    }
+  }
+
+  function setSoundState(value) {
+    desiredLoud = Boolean(value);
+    showOwnMouth(desiredLoud);
+    publishSoundState();
+  }
+
+  async function publishSoundState() {
+    if (
+      publishingLoud ||
+      !identity ||
+      mode !== "player"
+    ) {
+      return;
+    }
+
+    if (publishedLoud === desiredLoud) return;
+
+    publishingLoud = true;
+    updateControls();
+
+    const player = { ...identity };
+    let failed = false;
+
+    try {
+      while (publishedLoud !== desiredLoud) {
+        const nextState = desiredLoud;
+
+        const { error } = await db
+          .from("players")
+          .update({ is_loud: nextState })
+          .eq("room", player.room)
+          .eq("name", player.name);
+
+        if (error) throw error;
+
+        publishedLoud = nextState;
+      }
+    } catch (error) {
+      failed = true;
+
+      console.error(
+        "Не удалось обновить состояние звука:",
+        error
+      );
+    } finally {
+      publishingLoud = false;
+      updateControls();
+
+      if (failed) {
+        clearTimeout(soundRetry);
+
+        soundRetry = setTimeout(() => {
+          publishSoundState();
+        }, 2000);
+      }
+    }
   }
 
   async function loadScores() {
@@ -582,10 +840,15 @@
 
     const { data, error } = await db
       .from("players")
-      .select("name, score, avatar")
+      .select("name, score, avatar, is_loud")
       .eq("room", room);
 
-    if (version !== loadVersion || room !== activeRoom) return;
+    if (
+      version !== loadVersion ||
+      room !== activeRoom
+    ) {
+      return;
+    }
 
     if (error) {
       showError(error);
@@ -622,7 +885,9 @@
     if (!activeRoom) return;
 
     const version = subscriptionVersion;
-    $("connection").textContent = "Подключаем обновления табло…";
+
+    $("connection").textContent =
+      "Подключаем обновления табло…";
 
     channel = db
       .channel("scores-" + crypto.randomUUID())
@@ -642,7 +907,7 @@
 
         if (status === "SUBSCRIBED") {
           $("connection").textContent =
-            "Онлайн: изменения очков приходят автоматически.";
+            "Онлайн: очки и состояние аватаров обновляются.";
 
           loadScores().catch(showError);
         } else if (
@@ -666,7 +931,9 @@
 
     try {
       if (!window.supabase?.createClient) {
-        throw new Error("Не загрузилась библиотека Supabase.");
+        throw new Error(
+          "Не загрузилась библиотека Supabase."
+        );
       }
 
       db = window.supabase.createClient(
@@ -688,14 +955,14 @@
         previous = null;
       }
 
-      selectedAvatar = normalizeAvatar(previous?.avatar);
+      selectedAvatar =
+        normalizeAvatar(previous?.avatar);
 
       if (
         previous?.mode === "watch" &&
         typeof previous.room === "string" &&
         previous.room.trim()
       ) {
-        // Возобновление табло без изменения результатов.
         mode = "watch";
         activeRoom = previous.room;
         $("room").value = activeRoom;
@@ -704,7 +971,8 @@
         subscribe();
 
         $("status").textContent =
-          "Табло комнаты «" + activeRoom + "». Микрофон выключен.";
+          "Табло комнаты «" + activeRoom +
+          "». Микрофон выключен.";
       } else if (
         previous &&
         typeof previous.name === "string" &&
@@ -712,7 +980,6 @@
         typeof previous.room === "string" &&
         previous.room.trim()
       ) {
-        // Совместимость с предыдущим вариантом скрипта.
         mode = "player";
 
         identity = {
@@ -727,7 +994,10 @@
 
         const { error } = await db
           .from("players")
-          .update({ score: 0 })
+          .update({
+            score: 0,
+            is_loud: false
+          })
           .eq("room", identity.room)
           .eq("name", identity.name);
 
@@ -737,10 +1007,12 @@
         subscribe();
 
         $("status").textContent =
-          "Ваши очки сброшены. Нажмите «Начать», чтобы играть.";
+          "Ваши очки сброшены. " +
+          "Выберите аватар и нажмите «Начать».";
       } else {
         $("status").textContent =
-          "Выберите аватар для игры или откройте табло комнаты.";
+          "Выберите аватар для игры " +
+          "или откройте табло комнаты.";
       }
 
       ready = true;
@@ -749,7 +1021,8 @@
       showError(error);
 
       $("status").textContent =
-        "Не удалось подготовить игру. Проверьте ошибку ниже.";
+        "Не удалось подготовить игру. " +
+        "Проверьте ошибку ниже.";
     } finally {
       busy = false;
       updateControls();
@@ -757,7 +1030,12 @@
   }
 
   async function toggleWatch() {
-    if (!ready || busy || running || saving) return;
+    if (
+      !ready || busy || running ||
+      saving || publishingLoud
+    ) {
+      return;
+    }
 
     busy = true;
     clearError();
@@ -767,8 +1045,6 @@
       if (mode === "watch") {
         stopSubscription();
 
-        // После выхода из табло возвращаемся
-        // к форме входа, без изменения очков.
         mode = "setup";
         identity = null;
         activeRoom = "";
@@ -777,12 +1053,31 @@
         sessionStorage.removeItem(STORAGE_KEY);
 
         $("status").textContent =
-          "Введите имя, выберите аватар и нажмите «Начать».";
+          "Введите имя, выберите аватар " +
+          "и нажмите «Начать».";
       } else {
+        // Перед переходом в табло закрываем рот
+        // прежнего игрока, если он был.
+        if (identity) {
+          const { error } = await db
+            .from("players")
+            .update({ is_loud: false })
+            .eq("room", identity.room)
+            .eq("name", identity.name);
+
+          if (error) throw error;
+        }
+
         const room =
           $("room").value.trim() || "party-1";
 
         stopSubscription();
+
+        clearTimeout(soundRetry);
+        soundRetry = null;
+
+        desiredLoud = false;
+        publishedLoud = false;
 
         mode = "watch";
         identity = null;
@@ -790,7 +1085,6 @@
 
         $("room").value = room;
 
-        // Сохраняем режим табло до перезагрузки.
         saveSession();
 
         clearCards();
@@ -798,7 +1092,8 @@
         subscribe();
 
         $("status").textContent =
-          "Табло комнаты «" + room + "». Микрофон не используется.";
+          "Табло комнаты «" + room +
+          "». Микрофон не используется.";
       }
     } catch (error) {
       showError(error);
@@ -811,7 +1106,8 @@
   async function start() {
     if (
       !ready || busy || running ||
-      saving || mode === "watch"
+      saving || publishingLoud ||
+      mode === "watch"
     ) {
       return;
     }
@@ -832,8 +1128,8 @@
     if (!navigator.mediaDevices?.getUserMedia) {
       showError(
         new Error(
-          "Микрофон недоступен. Откройте игру " +
-          "по HTTPS в отдельной вкладке."
+          "Микрофон недоступен. " +
+          "Откройте игру по HTTPS в отдельной вкладке."
         )
       );
       return;
@@ -847,19 +1143,23 @@
       "Ожидаем разрешение на микрофон…";
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: false
-        }
-      });
+      stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
 
       const AudioContextClass =
-        window.AudioContext || window.webkitAudioContext;
+        window.AudioContext ||
+        window.webkitAudioContext;
 
       if (!AudioContextClass) {
-        throw new Error("Обработка звука не поддерживается.");
+        throw new Error(
+          "Обработка звука не поддерживается."
+        );
       }
 
       context = new AudioContextClass();
@@ -868,7 +1168,10 @@
       analyser = context.createAnalyser();
       analyser.fftSize = 1024;
 
-      context.createMediaStreamSource(stream).connect(analyser);
+      const source =
+        context.createMediaStreamSource(stream);
+
+      source.connect(analyser);
 
       let score = 0;
 
@@ -881,6 +1184,7 @@
           .maybeSingle();
 
         if (error) throw error;
+
         score = Number(data?.score) || 0;
       }
 
@@ -891,9 +1195,12 @@
             room,
             name,
             avatar: selectedAvatar,
-            score
+            score,
+            is_loud: false
           },
-          { onConflict: "room,name" }
+          {
+            onConflict: "room,name"
+          }
         );
 
       if (error) throw error;
@@ -904,9 +1211,16 @@
 
       saveSession();
 
+      clearTimeout(soundRetry);
+      soundRetry = null;
+
       running = true;
       loud = false;
+      silenceSince = null;
       lastPoint = -Infinity;
+
+      desiredLoud = false;
+      publishedLoud = false;
 
       $("status").textContent =
         name + ": микрофон включён";
@@ -923,17 +1237,21 @@
         showError(
           new Error(
             "Доступ к микрофону запрещён. " +
-            "Разрешите его в браузере. В Meleto " +
-            "также нужно разрешение микрофона для iframe."
+            "Разрешите его в браузере. " +
+            "В Meleto также нужно разрешение " +
+            "микрофона для iframe."
           )
         );
       } else if (error.name === "NotFoundError") {
-        showError(new Error("Микрофон не найден."));
+        showError(
+          new Error("Микрофон не найден.")
+        );
       } else {
         showError(error);
       }
 
-      $("status").textContent = "Не удалось начать игру.";
+      $("status").textContent =
+        "Не удалось начать игру.";
     } finally {
       busy = false;
       updateControls();
@@ -943,6 +1261,7 @@
   function stop() {
     running = false;
     loud = false;
+    silenceSince = null;
 
     if (frame !== null) {
       cancelAnimationFrame(frame);
@@ -950,19 +1269,28 @@
     }
 
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach(track => {
+        track.stop();
+      });
+
       stream = null;
     }
 
     if (context) {
       const oldContext = context;
       context = null;
+
       oldContext.close().catch(console.error);
     }
 
     analyser = null;
 
+    if (identity && mode === "player") {
+      setSoundState(false);
+    }
+
     $("meter").style.width = "0%";
+
     $("status").textContent =
       "Микрофон выключен. Очки сохранены.";
 
@@ -970,7 +1298,8 @@
   }
 
   function analyse() {
-    const data = new Uint8Array(analyser.fftSize);
+    const data =
+      new Uint8Array(analyser.fftSize);
 
     function tick() {
       if (!running || !analyser) return;
@@ -986,22 +1315,43 @@
 
       const level = Math.min(
         100,
-        Math.round(Math.sqrt(sum / data.length) * 300)
+        Math.round(
+          Math.sqrt(sum / data.length) * 300
+        )
       );
 
       $("meter").style.width = level + "%";
 
+      const now = performance.now();
+
       if (level >= LOUD_START) {
-        loud = true;
-      } else if (loud && level < LOUD_END) {
-        loud = false;
+        silenceSince = null;
 
-        const now = performance.now();
-
-        if (!saving && now - lastPoint >= COOLDOWN_MS) {
-          lastPoint = now;
-          addPoint();
+        if (!loud) {
+          loud = true;
+          setSoundState(true);
         }
+      } else if (loud && level < LOUD_END) {
+        if (silenceSince === null) {
+          silenceSince = now;
+        }
+
+        if (now - silenceSince >= SILENCE_MS) {
+          loud = false;
+          silenceSince = null;
+
+          setSoundState(false);
+
+          if (
+            !saving &&
+            now - lastPoint >= COOLDOWN_MS
+          ) {
+            lastPoint = now;
+            addPoint();
+          }
+        }
+      } else if (loud) {
+        silenceSince = null;
       }
 
       frame = requestAnimationFrame(tick);
@@ -1011,9 +1361,15 @@
   }
 
   async function addPoint() {
-    if (saving || !identity || mode !== "player") return;
+    if (
+      saving || !identity ||
+      mode !== "player"
+    ) {
+      return;
+    }
 
     saving = true;
+
     const player = { ...identity };
 
     try {
@@ -1026,7 +1382,8 @@
 
       if (error) throw error;
 
-      const nextScore = (Number(data.score) || 0) + 1;
+      const nextScore =
+        (Number(data.score) || 0) + 1;
 
       const { error: updateError } = await db
         .from("players")
@@ -1040,7 +1397,9 @@
 
       if (running) {
         $("status").textContent =
-          player.name + ": +1 очко! Всего: " + nextScore;
+          player.name +
+          ": +1 очко! Всего: " +
+          nextScore;
       }
 
       await loadScores();
@@ -1089,40 +1448,14 @@
       score,
       fill,
       avatar,
-      avatarKey: null
+      avatarKey: null,
+      normalImage: null,
+      talkingImage: null,
+      fallback: null,
+      normalFailed: false,
+      talkingFailed: false,
+      mouthOpen: false
     };
-  }
-
-  function applyAvatar(card, key) {
-    const avatar = AVATARS[key];
-
-    const image = document.createElement("img");
-    image.alt = avatar.label;
-    image.draggable = false;
-
-    const fallback = document.createElement("span");
-    fallback.className = "avatar-fallback";
-    fallback.textContent = avatar.label;
-    fallback.hidden = true;
-
-    image.addEventListener("error", () => {
-      image.hidden = true;
-      fallback.hidden = false;
-
-      showError(
-        new Error(
-          "Не найдена картинка " + avatar.image +
-          ". Загрузите mario.png и luigi.png " +
-          "рядом с index.html."
-        )
-      );
-    });
-
-    image.src = avatar.image;
-
-    card.avatar.replaceChildren(image, fallback);
-    card.item.style.setProperty("--color", avatar.color);
-    card.avatarKey = key;
   }
 
   function renderScores(players) {
@@ -1153,12 +1486,28 @@
         cards.set(player.name, card);
       }
 
-      const avatarKey = normalizeAvatar(player.avatar);
-      const score = Number(player.score) || 0;
+      const avatarKey =
+        normalizeAvatar(player.avatar);
+
+      const score =
+        Number(player.score) || 0;
 
       if (card.avatarKey !== avatarKey) {
         applyAvatar(card, avatarKey);
       }
+
+      const ownPlayer =
+        mode === "player" &&
+        identity &&
+        player.name === identity.name;
+
+      // У себя используем локальный сигнал,
+      // чтобы рот не зависел от задержки сети.
+      const mouthOpen = ownPlayer
+        ? desiredLoud
+        : Boolean(player.is_loud);
+
+      updateCardMouth(card, mouthOpen);
 
       const scoreText = String(score);
 
@@ -1169,13 +1518,20 @@
       card.fill.style.height =
         Math.max(
           0,
-          Math.min(100, score / MAX_SCORE * 100)
+          Math.min(
+            100,
+            score / MAX_SCORE * 100
+          )
         ) + "%";
 
-      const current = container.children[index];
+      const current =
+        container.children[index];
 
       if (current !== card.item) {
-        container.insertBefore(card.item, current || null);
+        container.insertBefore(
+          card.item,
+          current || null
+        );
       }
     });
   }
@@ -1187,7 +1543,11 @@
   window.addEventListener("pagehide", () => {
     stop();
 
-    if (db) stopSubscription();
+    clearTimeout(soundRetry);
+
+    if (db) {
+      stopSubscription();
+    }
   });
 
   renderChoices();
