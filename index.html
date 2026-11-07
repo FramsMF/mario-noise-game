@@ -1,1147 +1,1198 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Шумная вечеринка</title>
 
-  <title>Шумная вечеринка</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  :root {
+    --ink: #064967;
+    --track: #9bd8e4;
+  }
 
-    :root {
-      --ink: #064967;
-      --track: #9bd8e4;
-    }
+  body {
+    margin: 0;
+    background: #fff;
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+  }
 
-    body {
-      margin: 0;
-      background: #fff;
-      color: var(--ink);
-      font-family: Arial, Helvetica, sans-serif;
-    }
+  button,
+  input {
+    font: inherit;
+  }
 
-    button,
-    input {
-      font: inherit;
-    }
+  .game {
+    padding: 18px 12px 28px;
+  }
 
-    .game {
-      padding: 18px 12px 28px;
-    }
+  .room-title {
+    margin: 0 0 16px;
+    text-align: center;
+    font-size: 15px;
+  }
 
-    .arena {
-      overflow-x: auto;
-    }
+  .arena {
+    overflow-x: auto;
+  }
 
+  .players {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 35px;
+    width: max-content;
+    min-width: 100%;
+    margin: 0;
+    padding: 0 10px;
+    list-style: none;
+  }
+
+  .player {
+    flex: 0 0 174px;
+    width: 174px;
+    text-align: center;
+  }
+
+  .score {
+    height: 48px;
+    font-size: 40px;
+    line-height: 44px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stage {
+    position: relative;
+    height: 360px;
+  }
+
+  .track {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 94px;
+    height: 280px;
+    padding: 7px;
+    transform: translateX(-50%);
+    background: var(--track);
+  }
+
+  .track-inner {
+    position: relative;
+    height: 100%;
+  }
+
+  .fill {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 0;
+    background: var(--color);
+    transition: height 250ms ease;
+  }
+
+  .avatar {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 174px;
+    height: 202px;
+    z-index: 2;
+  }
+
+  .avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+  }
+
+  .avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 145px;
+    height: 145px;
+    border: 3px solid var(--ink);
+    border-radius: 50%;
+    background: white;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .name {
+    margin-top: 7px;
+    overflow: hidden;
+    font-size: 34px;
+    line-height: 42px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .empty {
+    padding: 55px 12px;
+    text-align: center;
+    color: #718795;
+  }
+
+  .panel {
+    width: min(100%, 450px);
+    margin: 24px auto 0;
+    padding: 18px;
+    border: 1px solid #dce8ee;
+    border-radius: 16px;
+    background: #f5fafc;
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  label,
+  .label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px;
+    border: 1px solid #c8dce6;
+    border-radius: 9px;
+    background: #fff;
+    color: var(--ink);
+  }
+
+  input:focus {
+    outline: 2px solid #9bd8e4;
+  }
+
+  .label {
+    margin: 18px 0 8px;
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .choice {
+    padding: 10px;
+    border: 3px solid transparent;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .choice[aria-pressed="true"] {
+    border-color: var(--ink);
+    background: #e7f5fc;
+  }
+
+  .choice img {
+    display: block;
+    width: 100%;
+    height: 110px;
+    margin-bottom: 7px;
+    object-fit: contain;
+  }
+
+  .choice span {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .choice .image-warning {
+    padding: 20px 2px;
+    color: #bd3030;
+    font-size: 12px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .action {
+    flex: 1;
+    padding: 12px;
+    border: 0;
+    border-radius: 10px;
+    background: #279e45;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  #stop {
+    background: #dc4b43;
+  }
+
+  #watch {
+    width: 100%;
+    margin-top: 14px;
+    background: var(--ink);
+  }
+
+  button:disabled,
+  input:disabled {
+    opacity: 0.5;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  .status,
+  .connection {
+    margin: 14px 0 0;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .connection {
+    color: #718795;
+    font-size: 12px;
+  }
+
+  .meter {
+    height: 8px;
+    margin-top: 12px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: #dce8ee;
+  }
+
+  .meter-fill {
+    width: 0;
+    height: 100%;
+    background: #38b65a;
+  }
+
+  .hint {
+    margin: 12px 0 0;
+    color: #718795;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .error {
+    margin: 12px 0 0;
+    color: #bd3030;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (max-width: 420px) {
     .players {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 35px;
-
-      width: max-content;
-      min-width: 100%;
-
-      margin: 0;
-      padding: 0 10px;
-      list-style: none;
-    }
-
-    .player {
-      flex: 0 0 174px;
-      width: 174px;
-      text-align: center;
-    }
-
-    .score {
-      height: 48px;
-
-      font-size: 40px;
-      line-height: 44px;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .stage {
-      position: relative;
-      height: 360px;
-    }
-
-    .track {
-      position: absolute;
-      top: 0;
-      left: 50%;
-
-      width: 94px;
-      height: 280px;
-      padding: 7px;
-
-      transform: translateX(-50%);
-      background: var(--track);
-    }
-
-    .track-inner {
-      position: relative;
-      height: 100%;
-    }
-
-    .fill {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      left: 0;
-
-      height: 0;
-      background: var(--color);
-
-      transition: height 250ms ease;
-    }
-
-    .avatar {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-      left: 0;
-
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-
-      width: 174px;
-      height: 202px;
-
-      z-index: 2;
-    }
-
-    .avatar img {
-      display: block;
-      width: 100%;
-      height: 100%;
-
-      object-fit: contain;
-      object-position: center bottom;
-
-      animation: none;
-      transition: none;
-    }
-
-    .avatar-fallback {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      width: 150px;
-      height: 150px;
-
-      border: 3px solid var(--ink);
-      border-radius: 50%;
-      background: #fff;
-
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .name {
-      margin-top: 7px;
-      overflow: hidden;
-
-      font-size: 34px;
-      line-height: 42px;
-      font-weight: 800;
-
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .empty {
-      padding: 55px 12px;
-      text-align: center;
-      color: #718795;
-    }
-
-    .panel {
-      width: min(100%, 450px);
-      margin: 24px auto 0;
-      padding: 18px;
-
-      border: 1px solid #dce8ee;
-      border-radius: 16px;
-      background: #f5fafc;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 0;
     }
 
     .fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: 1fr;
     }
-
-    label,
-    .label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    input {
-      width: 100%;
-      margin-top: 6px;
-      padding: 11px;
-
-      border: 1px solid #c8dce6;
-      border-radius: 9px;
-
-      background: #fff;
-      color: var(--ink);
-    }
-
-    input:focus {
-      outline: 2px solid #9bd8e4;
-      outline-offset: 1px;
-    }
-
-    input:disabled {
-      opacity: 0.7;
-    }
-
-    .label {
-      margin-top: 18px;
-      margin-bottom: 8px;
-    }
-
-    .choices {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .choice {
-      padding: 10px;
-
-      border: 3px solid transparent;
-      border-radius: 12px;
-
-      background: #fff;
-      color: var(--ink);
-      cursor: pointer;
-    }
-
-    .choice[aria-pressed="true"] {
-      border-color: var(--ink);
-      background: #e7f5fc;
-    }
-
-    .choice img {
-      display: block;
-
-      width: 100%;
-      height: 110px;
-      margin-bottom: 7px;
-
-      object-fit: contain;
-      object-position: center;
-    }
-
-    .choice span {
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .choice .image-warning {
-      padding: 25px 4px;
-      color: #bd3030;
-      font-size: 12px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .action {
-      flex: 1;
-      padding: 12px;
-
-      border: 0;
-      border-radius: 10px;
-
-      background: #279e45;
-      color: #fff;
-
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    #stop {
-      background: #dc4b43;
-    }
-
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .status {
-      margin: 14px 0 0;
-      text-align: center;
-      font-size: 13px;
-    }
-
-    .meter {
-      height: 8px;
-      margin-top: 12px;
-      overflow: hidden;
-
-      border-radius: 99px;
-      background: #dce8ee;
-    }
-
-    .meter-fill {
-      width: 0;
-      height: 100%;
-      background: #38b65a;
-    }
-
-    .hint {
-      margin: 12px 0 0;
-      color: #718795;
-      font-size: 12px;
-      text-align: center;
-    }
-
-    .error {
-      margin: 12px 0 0;
-      color: #bd3030;
-      font-size: 13px;
-      overflow-wrap: anywhere;
-    }
-
-    [hidden] {
-      display: none !important;
-    }
-
-    @media (max-width: 420px) {
-      .players {
-        justify-content: flex-start;
-        gap: 16px;
-        padding: 0;
-      }
-
-      .fields {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 
 <body>
-  <main class="game">
+<main class="game">
 
-    <section class="arena" aria-label="Очки игроков">
-      <ul id="players" class="players"></ul>
+  <p id="roomTitle" class="room-title" hidden></p>
 
-      <p id="empty" class="empty">
-        Выберите аватар и нажмите «Начать»
-      </p>
-    </section>
+  <section class="arena" aria-label="Очки игроков">
+    <ul id="players" class="players"></ul>
 
-    <section class="panel">
+    <p id="empty" class="empty">
+      Начните игру или откройте табло комнаты
+    </p>
+  </section>
 
-      <div class="fields">
-        <label for="name">
-          Имя игрока
-          <input
-            id="name"
-            type="text"
-            placeholder="Маша"
-            maxlength="30"
-          >
-        </label>
+  <section class="panel">
 
-        <label for="room">
-          Комната
-          <input
-            id="room"
-            type="text"
-            value="party-1"
-            maxlength="50"
-          >
-        </label>
-      </div>
+    <div class="fields">
+      <label id="nameField">
+        Имя игрока
+        <input id="name" placeholder="Маша" maxlength="30">
+      </label>
 
+      <label>
+        Комната
+        <input id="room" value="party-1" maxlength="50">
+      </label>
+    </div>
+
+    <div id="avatarSection">
       <div class="label">Выберите аватар</div>
       <div id="choices" class="choices"></div>
+    </div>
 
-      <div class="actions">
-        <button id="start" class="action" type="button" disabled>
-          Начать
-        </button>
+    <div id="playerActions" class="actions">
+      <button id="start" class="action" type="button" disabled>
+        Начать
+      </button>
 
-        <button id="stop" class="action" type="button" disabled>
-          Стоп
-        </button>
-      </div>
+      <button id="stop" class="action" type="button" disabled>
+        Стоп
+      </button>
+    </div>
 
-      <p id="status" class="status">
-        Подключение…
-      </p>
+    <button id="watch" class="action" type="button" disabled>
+      Показать очки игроков
+    </button>
 
-      <div class="meter">
-        <div id="meter" class="meter-fill"></div>
-      </div>
+    <p id="status" class="status">Подключение…</p>
+    <p id="connection" class="connection"></p>
 
-      <p class="hint">
-        Один громкий всплеск — одно очко.
-        Обновление страницы обнуляет ваш результат.
-      </p>
+    <div id="meterSection" class="meter">
+      <div id="meter" class="meter-fill"></div>
+    </div>
 
-      <p id="error" class="error" role="alert"></p>
+    <p id="hint" class="hint">
+      Один громкий всплеск — одно очко.
+      Обновление страницы в режиме игрока обнуляет его результат.
+    </p>
 
-    </section>
-  </main>
+    <p id="error" class="error" role="alert"></p>
+  </section>
+</main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script>
-    (() => {
-      "use strict";
+<script>
+(() => {
+  "use strict";
 
-      const SUPABASE_URL =
-        "https://juchryyubxkuapnaqelj.supabase.co";
+  const SUPABASE_URL =
+    "https://juchryyubxkuapnaqelj.supabase.co";
 
-      const SUPABASE_KEY =
-        "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
+  const SUPABASE_KEY =
+    "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
 
-      const STORAGE_KEY = "noise-party-player-v2";
+  const STORAGE_KEY = "noise-party-player-v2";
 
-      const MAX_SCORE = 100;
-      const LOUD_START = 35;
-      const LOUD_END = 25;
-      const COOLDOWN_MS = 1000;
+  const MAX_SCORE = 100;
+  const LOUD_START = 35;
+  const LOUD_END = 25;
+  const COOLDOWN_MS = 1000;
 
-      // Если картинки находятся в папке images,
-      // замените пути на ./images/luigi.png
-      // и ./images/mario.png.
-      const AVATARS = {
-        luigi: {
-          label: "Луиджи",
-          color: "#cbf477",
-          image: "./luigi.png"
+  const AVATARS = {
+    luigi: {
+      label: "Луиджи",
+      color: "#cbf477",
+      image: "./luigi.png"
+    },
+    mario: {
+      label: "Марио",
+      color: "#e69a50",
+      image: "./mario.png"
+    }
+  };
+
+  const $ = id => document.getElementById(id);
+
+  let db = null;
+  let mode = "setup";
+  let identity = null;
+  let selectedAvatar = "luigi";
+  let activeRoom = "";
+
+  let ready = false;
+  let busy = false;
+  let running = false;
+  let saving = false;
+
+  let context = null;
+  let stream = null;
+  let analyser = null;
+  let frame = null;
+  let loud = false;
+  let lastPoint = -Infinity;
+
+  let channel = null;
+  let timer = null;
+  let subscriptionVersion = 0;
+  let loadVersion = 0;
+
+  const cards = new Map();
+
+  function showError(error) {
+    console.error(error);
+    $("error").textContent =
+      error?.message || String(error);
+  }
+
+  function clearError() {
+    $("error").textContent = "";
+  }
+
+  function normalizeAvatar(key) {
+    if (Object.prototype.hasOwnProperty.call(AVATARS, key)) {
+      return key;
+    }
+    return key === "red" ? "mario" : "luigi";
+  }
+
+  function saveSession() {
+    sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        mode,
+        name: identity?.name || "",
+        room: activeRoom || $("room").value.trim() || "party-1",
+        avatar: selectedAvatar
+      })
+    );
+  }
+
+  function renderChoices() {
+    for (const [key, avatar] of Object.entries(AVATARS)) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "choice";
+      button.dataset.avatar = key;
+
+      const image = document.createElement("img");
+      image.alt = avatar.label;
+      image.draggable = false;
+
+      const warning = document.createElement("span");
+      warning.className = "image-warning";
+      warning.textContent = "Не найден файл " + avatar.image;
+      warning.hidden = true;
+
+      image.addEventListener("error", () => {
+        image.hidden = true;
+        warning.hidden = false;
+      });
+
+      image.src = avatar.image;
+
+      const label = document.createElement("span");
+      label.textContent = avatar.label;
+
+      button.append(image, warning, label);
+
+      button.addEventListener("click", () => {
+        if (!ready || busy || running || saving || mode === "watch") {
+          return;
+        }
+
+        selectedAvatar = key;
+        updateControls();
+
+        $("status").textContent =
+          "Выбран " + avatar.label +
+          ". Нажмите «Начать», чтобы применить.";
+      });
+
+      $("choices").append(button);
+    }
+  }
+
+  function updateControls() {
+    const watching = mode === "watch";
+
+    $("nameField").hidden = watching;
+    $("avatarSection").hidden = watching;
+    $("playerActions").hidden = watching;
+    $("meterSection").hidden = watching;
+
+    $("start").disabled =
+      !ready || busy || running || saving || watching;
+
+    $("stop").disabled = !running;
+
+    $("watch").disabled =
+      !ready || busy || running || saving;
+
+    $("watch").textContent = watching
+      ? "Вернуться к игре"
+      : "Показать очки игроков";
+
+    $("name").disabled =
+      !ready || busy || running || Boolean(identity);
+
+    $("room").disabled =
+      !ready || busy || running || Boolean(identity) || watching;
+
+    document.querySelectorAll(".choice").forEach(button => {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.avatar === selectedAvatar)
+      );
+
+      button.disabled =
+        !ready || busy || running || saving || watching;
+    });
+
+    $("hint").textContent = watching
+      ? "Режим табло: микрофон выключен. " +
+        "Обновление страницы не сбрасывает результаты."
+      : "Один громкий всплеск — одно очко. " +
+        "Обновление страницы в режиме игрока обнуляет его результат.";
+
+    $("roomTitle").hidden = !activeRoom;
+    $("roomTitle").textContent = activeRoom
+      ? "Комната: " + activeRoom
+      : "";
+  }
+
+  function clearCards() {
+    ++loadVersion;
+    cards.clear();
+    $("players").replaceChildren();
+    $("empty").hidden = false;
+    $("empty").textContent =
+      "Начните игру или откройте табло комнаты";
+  }
+
+  async function loadScores() {
+    if (!activeRoom) return;
+
+    const room = activeRoom;
+    const version = ++loadVersion;
+
+    const { data, error } = await db
+      .from("players")
+      .select("name, score, avatar")
+      .eq("room", room);
+
+    if (version !== loadVersion || room !== activeRoom) return;
+
+    if (error) {
+      showError(error);
+      return;
+    }
+
+    renderScores(data || []);
+
+    if (!data?.length) {
+      $("empty").textContent =
+        "В комнате «" + room + "» пока нет игроков.";
+    }
+  }
+
+  function stopSubscription() {
+    ++subscriptionVersion;
+
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    if (channel) {
+      db.removeChannel(channel);
+      channel = null;
+    }
+
+    $("connection").textContent = "";
+  }
+
+  function subscribe() {
+    stopSubscription();
+
+    if (!activeRoom) return;
+
+    const version = subscriptionVersion;
+    $("connection").textContent = "Подключаем обновления табло…";
+
+    channel = db
+      .channel("scores-" + crypto.randomUUID())
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "players"
         },
-
-        mario: {
-          label: "Марио",
-          color: "#e69a50",
-          image: "./mario.png"
-        }
-      };
-
-      const $ = id => document.getElementById(id);
-
-      let db = null;
-      let selectedAvatar = "luigi";
-      let identity = null;
-
-      let context = null;
-      let stream = null;
-      let analyser = null;
-      let frame = null;
-
-      let ready = false;
-      let running = false;
-      let busy = false;
-      let saving = false;
-      let loud = false;
-
-      let lastPoint = -Infinity;
-      let channel = null;
-      let timer = null;
-      let loadVersion = 0;
-
-      const cards = new Map();
-
-      function showError(error) {
-        console.error(error);
-
-        $("error").textContent =
-          error?.message || String(error);
-      }
-
-      function clearError() {
-        $("error").textContent = "";
-      }
-
-      function normalizeAvatar(key) {
-        if (Object.prototype.hasOwnProperty.call(AVATARS, key)) {
-          return key;
-        }
-
-        // Совместимость с прошлой версией.
-        if (key === "red") return "mario";
-
-        return "luigi";
-      }
-
-      function createAvatarImage(key) {
-        const avatar = AVATARS[normalizeAvatar(key)];
-
-        const image = document.createElement("img");
-        image.alt = avatar.label;
-        image.draggable = false;
-        image.src = avatar.image;
-
-        return image;
-      }
-
-      function renderChoices() {
-        for (const [key, avatar] of Object.entries(AVATARS)) {
-          const button = document.createElement("button");
-
-          button.type = "button";
-          button.className = "choice";
-          button.dataset.avatar = key;
-
-          const image = createAvatarImage(key);
-
-          const warning = document.createElement("span");
-          warning.className = "image-warning";
-          warning.textContent =
-            "Не найден файл " + avatar.image;
-          warning.hidden = true;
-
-          image.addEventListener("error", () => {
-            image.hidden = true;
-            warning.hidden = false;
-          });
-
-          const label = document.createElement("span");
-          label.textContent = avatar.label;
-
-          button.append(image, warning, label);
-
-          button.addEventListener("click", () => {
-            if (!ready || running || busy || saving) return;
-
-            selectedAvatar = key;
-            updateControls();
-
-            $("status").textContent =
-              "Выбран " + avatar.label +
-              ". Нажмите «Начать», чтобы применить.";
-          });
-
-          $("choices").appendChild(button);
-        }
-
-        updateControls();
-      }
-
-      function updateControls() {
-        $("start").disabled =
-          !ready || busy || running || saving;
-
-        $("stop").disabled = !running;
-
-        $("name").disabled =
-          !ready || busy || running || Boolean(identity);
-
-        $("room").disabled =
-          !ready || busy || running || Boolean(identity);
-
-        document.querySelectorAll(".choice").forEach(button => {
-          button.setAttribute(
-            "aria-pressed",
-            String(button.dataset.avatar === selectedAvatar)
-          );
-
-          button.disabled =
-            !ready || busy || running || saving;
-        });
-      }
-
-      function saveIdentity() {
-        sessionStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({
-            ...identity,
-            avatar: selectedAvatar
-          })
-        );
-      }
-
-      async function init() {
-        busy = true;
-        updateControls();
-
-        try {
-          if (!window.supabase?.createClient) {
-            throw new Error(
-              "Не загрузилась библиотека Supabase."
-            );
-          }
-
-          db = window.supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY
-          );
-
-          const testKey = STORAGE_KEY + "-test";
-          sessionStorage.setItem(testKey, "1");
-          sessionStorage.removeItem(testKey);
-
-          let previous = null;
-
-          try {
-            previous = JSON.parse(
-              sessionStorage.getItem(STORAGE_KEY) || "null"
-            );
-          } catch {
-            previous = null;
-          }
-
-          if (
-            previous &&
-            typeof previous.name === "string" &&
-            typeof previous.room === "string" &&
-            previous.name.trim() &&
-            previous.room.trim()
-          ) {
-            identity = {
-              name: previous.name,
-              room: previous.room
-            };
-
-            selectedAvatar =
-              normalizeAvatar(previous.avatar);
-
-            $("name").value = identity.name;
-            $("room").value = identity.room;
-
-            // Обнуляем только игрока этой вкладки.
-            const { error } = await db
-              .from("players")
-              .update({ score: 0 })
-              .eq("room", identity.room)
-              .eq("name", identity.name);
-
-            if (error) throw error;
-
-            await loadScores();
-            subscribe();
-
-            $("status").textContent =
-              "Ваши очки сброшены. " +
-              "Выберите аватар и нажмите «Начать».";
-          } else {
-            $("status").textContent =
-              "Введите имя, выберите аватар " +
-              "и нажмите «Начать».";
-          }
-
-          ready = true;
-        } catch (error) {
-          ready = false;
-          showError(error);
-
-          $("status").textContent =
-            "Не удалось подготовить игру. " +
-            "Проверьте ошибку ниже и обновите страницу.";
-        } finally {
-          busy = false;
-          updateControls();
-        }
-      }
-
-      async function start() {
-        if (!ready || busy || running || saving) return;
-
-        const name =
-          identity?.name || $("name").value.trim();
-
-        const room =
-          identity?.room ||
-          $("room").value.trim() ||
-          "party-1";
-
-        if (!name) {
-          showError(new Error("Введите имя игрока."));
-          return;
-        }
-
-        if (!navigator.mediaDevices?.getUserMedia) {
-          showError(
-            new Error(
-              "Микрофон недоступен. " +
-              "Откройте игру по HTTPS в отдельной вкладке."
-            )
-          );
-          return;
-        }
-
-        busy = true;
-        clearError();
-        updateControls();
-
-        $("status").textContent =
-          "Разрешите доступ к микрофону…";
-
-        try {
-          stream =
-            await navigator.mediaDevices.getUserMedia({
-              audio: {
-                echoCancellation: true,
-                noiseSuppression: false,
-                autoGainControl: false
-              }
-            });
-
-          const AudioContextClass =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-          if (!AudioContextClass) {
-            throw new Error(
-              "Браузер не поддерживает обработку звука."
-            );
-          }
-
-          context = new AudioContextClass();
-          await context.resume();
-
-          analyser = context.createAnalyser();
-          analyser.fftSize = 1024;
-
-          const source =
-            context.createMediaStreamSource(stream);
-
-          source.connect(analyser);
-
-          if (!identity) {
-            // Первый старт в этой вкладке.
-            const { error } = await db
-              .from("players")
-              .upsert(
-                {
-                  room,
-                  name,
-                  avatar: selectedAvatar,
-                  score: 0
-                },
-                {
-                  onConflict: "room,name"
-                }
-              );
-
-            if (error) throw error;
-
-            identity = { name, room };
-          } else {
-            // Применяем аватар, сохраняя текущие очки.
-            const { data: existing, error: readError } = await db
-              .from("players")
-              .select("score")
-              .eq("room", identity.room)
-              .eq("name", identity.name)
-              .maybeSingle();
-
-            if (readError) throw readError;
-
-            const { error } = await db
-              .from("players")
-              .upsert(
-                {
-                  room: identity.room,
-                  name: identity.name,
-                  avatar: selectedAvatar,
-                  score: Number(existing?.score) || 0
-                },
-                {
-                  onConflict: "room,name"
-                }
-              );
-
-            if (error) throw error;
-          }
-
-          saveIdentity();
-
-          running = true;
-          loud = false;
-          lastPoint = -Infinity;
-
-          $("status").textContent =
-            identity.name + ": микрофон включён";
-
-          await loadScores();
-
-          if (!channel) subscribe();
-
-          analyse();
-        } catch (error) {
-          stop();
-
-          if (error.name === "NotAllowedError") {
-            showError(
-              new Error(
-                "Доступ к микрофону запрещён. " +
-                "Разрешите его в браузере. " +
-                "В Meleto также требуется разрешение " +
-                "микрофона для iframe."
-              )
-            );
-          } else if (error.name === "NotFoundError") {
-            showError(
-              new Error(
-                "Микрофон не найден. " +
-                "Проверьте его подключение."
-              )
-            );
-          } else {
-            showError(error);
-          }
-
-          $("status").textContent =
-            "Не удалось начать игру.";
-        } finally {
-          busy = false;
-          updateControls();
-        }
-      }
-
-      function stop() {
-        running = false;
-        loud = false;
-
-        if (frame !== null) {
-          cancelAnimationFrame(frame);
-          frame = null;
-        }
-
-        if (stream) {
-          stream.getTracks().forEach(track => {
-            track.stop();
-          });
-
-          stream = null;
-        }
-
-        if (context) {
-          const oldContext = context;
-          context = null;
-
-          oldContext.close().catch(console.error);
-        }
-
-        analyser = null;
-
-        $("meter").style.width = "0%";
-
-        $("status").textContent =
-          "Микрофон выключен. " +
-          "Можно выбрать другой аватар.";
-
-        updateControls();
-      }
-
-      function analyse() {
-        const data =
-          new Uint8Array(analyser.fftSize);
-
-        function tick() {
-          if (!running || !analyser) return;
-
-          analyser.getByteTimeDomainData(data);
-
-          let sum = 0;
-
-          for (const sample of data) {
-            const value = (sample - 128) / 128;
-            sum += value * value;
-          }
-
-          const level = Math.min(
-            100,
-            Math.round(
-              Math.sqrt(sum / data.length) * 300
-            )
-          );
-
-          $("meter").style.width = level + "%";
-
-          if (level >= LOUD_START) {
-            loud = true;
-          } else if (loud && level < LOUD_END) {
-            loud = false;
-
-            const now = performance.now();
-
-            if (
-              !saving &&
-              now - lastPoint >= COOLDOWN_MS
-            ) {
-              lastPoint = now;
-              addPoint();
-            }
-          }
-
-          frame = requestAnimationFrame(tick);
-        }
-
-        tick();
-      }
-
-      async function addPoint() {
-        if (saving || !identity) return;
-
-        saving = true;
-
-        try {
-          const { data, error } = await db
-            .from("players")
-            .select("score")
-            .eq("room", identity.room)
-            .eq("name", identity.name)
-            .single();
-
-          if (error) throw error;
-
-          const nextScore =
-            (Number(data.score) || 0) + 1;
-
-          const { error: updateError } = await db
-            .from("players")
-            .update({ score: nextScore })
-            .eq("room", identity.room)
-            .eq("name", identity.name)
-            .select("score")
-            .single();
-
-          if (updateError) throw updateError;
-
-          if (running) {
-            $("status").textContent =
-              identity.name +
-              ": +1 очко! Всего: " +
-              nextScore;
-          }
-
-          await loadScores();
-        } catch (error) {
-          showError(error);
-        } finally {
-          saving = false;
-          updateControls();
-        }
-      }
-
-      async function loadScores() {
-        if (!identity) return;
-
-        const version = ++loadVersion;
-
-        const { data, error } = await db
-          .from("players")
-          .select("name, score, avatar")
-          .eq("room", identity.room);
-
-        if (error) {
-          if (version === loadVersion) showError(error);
-          return;
-        }
-
-        if (version !== loadVersion) return;
-
-        renderScores(data || []);
-      }
-
-      function subscribe() {
-        channel = db
-          .channel("party-" + crypto.randomUUID())
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "players"
-            },
-            () => {
-              loadScores().catch(showError);
-            }
-          )
-          .subscribe(status => {
-            if (status === "SUBSCRIBED") {
-              loadScores().catch(showError);
-            }
-          });
-
-        if (timer) clearInterval(timer);
-
-        timer = setInterval(() => {
+        () => {
           loadScores().catch(showError);
-        }, 5000);
-      }
-
-      function createCard(name) {
-        const item = document.createElement("li");
-        item.className = "player";
-
-        const score = document.createElement("div");
-        score.className = "score";
-
-        const stage = document.createElement("div");
-        stage.className = "stage";
-
-        const track = document.createElement("div");
-        track.className = "track";
-
-        const inner = document.createElement("div");
-        inner.className = "track-inner";
-
-        const fill = document.createElement("div");
-        fill.className = "fill";
-
-        const avatar = document.createElement("div");
-        avatar.className = "avatar";
-
-        const label = document.createElement("div");
-        label.className = "name";
-        label.textContent = name;
-        label.title = name;
-
-        inner.appendChild(fill);
-        track.appendChild(inner);
-        stage.append(track, avatar);
-        item.append(score, stage, label);
-
-        return {
-          item,
-          score,
-          fill,
-          avatar,
-          avatarKey: null
-        };
-      }
-
-      function applyCardAvatar(card, key) {
-        const avatar = AVATARS[key];
-
-        card.avatar.replaceChildren();
-
-        const image = createAvatarImage(key);
-
-        const fallback = document.createElement("span");
-        fallback.className = "avatar-fallback";
-        fallback.textContent = avatar.label;
-        fallback.hidden = true;
-
-        image.addEventListener("error", () => {
-          image.hidden = true;
-          fallback.hidden = false;
-
-          showError(
-            new Error(
-              "Не найдена картинка " + avatar.image +
-              ". Загрузите mario.png и luigi.png " +
-              "рядом с index.html."
-            )
-          );
-        });
-
-        card.avatar.append(image, fallback);
-
-        card.item.style.setProperty(
-          "--color",
-          avatar.color
-        );
-
-        card.avatarKey = key;
-      }
-
-      function renderScores(players) {
-        const sorted = [...players].sort((a, b) =>
-          a.name.localeCompare(b.name, "ru")
-        );
-
-        $("empty").hidden = sorted.length > 0;
-
-        const activeNames = new Set(
-          sorted.map(player => player.name)
-        );
-
-        for (const [name, card] of cards) {
-          if (!activeNames.has(name)) {
-            card.item.remove();
-            cards.delete(name);
-          }
         }
+      )
+      .subscribe(status => {
+        if (version !== subscriptionVersion) return;
 
-        const container = $("players");
+        if (status === "SUBSCRIBED") {
+          $("connection").textContent =
+            "Онлайн: изменения очков приходят автоматически.";
 
-        sorted.forEach((player, index) => {
-          let card = cards.get(player.name);
-
-          if (!card) {
-            card = createCard(player.name);
-            cards.set(player.name, card);
-          }
-
-          const avatarKey =
-            normalizeAvatar(player.avatar);
-
-          const score =
-            Number(player.score) || 0;
-
-          if (card.avatarKey !== avatarKey) {
-            applyCardAvatar(card, avatarKey);
-          }
-
-          const scoreText = String(score);
-
-          if (card.score.textContent !== scoreText) {
-            card.score.textContent = scoreText;
-          }
-
-          const percentage = Math.max(
-            0,
-            Math.min(
-              100,
-              score / MAX_SCORE * 100
-            )
-          );
-
-          card.fill.style.height = percentage + "%";
-
-          const current = container.children[index];
-
-          if (current !== card.item) {
-            container.insertBefore(
-              card.item,
-              current || null
-            );
-          }
-        });
-      }
-
-      $("start").addEventListener("click", start);
-      $("stop").addEventListener("click", stop);
-
-      window.addEventListener("pagehide", () => {
-        stop();
-
-        if (timer) clearInterval(timer);
-
-        if (channel && db) {
-          db.removeChannel(channel);
+          loadScores().catch(showError);
+        } else if (
+          status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT" ||
+          status === "CLOSED"
+        ) {
+          $("connection").textContent =
+            "Realtime недоступен: обновление раз в 5 секунд.";
         }
       });
 
-      renderChoices();
-      init();
-    })();
-  </script>
+    timer = setInterval(() => {
+      loadScores().catch(showError);
+    }, 5000);
+  }
+
+  async function init() {
+    busy = true;
+    updateControls();
+
+    try {
+      if (!window.supabase?.createClient) {
+        throw new Error("Не загрузилась библиотека Supabase.");
+      }
+
+      db = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+      const testKey = STORAGE_KEY + "-test";
+      sessionStorage.setItem(testKey, "1");
+      sessionStorage.removeItem(testKey);
+
+      let previous = null;
+
+      try {
+        previous = JSON.parse(
+          sessionStorage.getItem(STORAGE_KEY) || "null"
+        );
+      } catch {
+        previous = null;
+      }
+
+      selectedAvatar = normalizeAvatar(previous?.avatar);
+
+      if (
+        previous?.mode === "watch" &&
+        typeof previous.room === "string" &&
+        previous.room.trim()
+      ) {
+        // Возобновление табло без изменения результатов.
+        mode = "watch";
+        activeRoom = previous.room;
+        $("room").value = activeRoom;
+
+        await loadScores();
+        subscribe();
+
+        $("status").textContent =
+          "Табло комнаты «" + activeRoom + "». Микрофон выключен.";
+      } else if (
+        previous &&
+        typeof previous.name === "string" &&
+        previous.name.trim() &&
+        typeof previous.room === "string" &&
+        previous.room.trim()
+      ) {
+        // Совместимость с предыдущим вариантом скрипта.
+        mode = "player";
+
+        identity = {
+          name: previous.name,
+          room: previous.room
+        };
+
+        activeRoom = identity.room;
+
+        $("name").value = identity.name;
+        $("room").value = identity.room;
+
+        const { error } = await db
+          .from("players")
+          .update({ score: 0 })
+          .eq("room", identity.room)
+          .eq("name", identity.name);
+
+        if (error) throw error;
+
+        await loadScores();
+        subscribe();
+
+        $("status").textContent =
+          "Ваши очки сброшены. Нажмите «Начать», чтобы играть.";
+      } else {
+        $("status").textContent =
+          "Выберите аватар для игры или откройте табло комнаты.";
+      }
+
+      ready = true;
+    } catch (error) {
+      ready = false;
+      showError(error);
+
+      $("status").textContent =
+        "Не удалось подготовить игру. Проверьте ошибку ниже.";
+    } finally {
+      busy = false;
+      updateControls();
+    }
+  }
+
+  async function toggleWatch() {
+    if (!ready || busy || running || saving) return;
+
+    busy = true;
+    clearError();
+    updateControls();
+
+    try {
+      if (mode === "watch") {
+        stopSubscription();
+
+        // После выхода из табло возвращаемся
+        // к форме входа, без изменения очков.
+        mode = "setup";
+        identity = null;
+        activeRoom = "";
+
+        clearCards();
+        sessionStorage.removeItem(STORAGE_KEY);
+
+        $("status").textContent =
+          "Введите имя, выберите аватар и нажмите «Начать».";
+      } else {
+        const room =
+          $("room").value.trim() || "party-1";
+
+        stopSubscription();
+
+        mode = "watch";
+        identity = null;
+        activeRoom = room;
+
+        $("room").value = room;
+
+        // Сохраняем режим табло до перезагрузки.
+        saveSession();
+
+        clearCards();
+        await loadScores();
+        subscribe();
+
+        $("status").textContent =
+          "Табло комнаты «" + room + "». Микрофон не используется.";
+      }
+    } catch (error) {
+      showError(error);
+    } finally {
+      busy = false;
+      updateControls();
+    }
+  }
+
+  async function start() {
+    if (
+      !ready || busy || running ||
+      saving || mode === "watch"
+    ) {
+      return;
+    }
+
+    const name =
+      identity?.name || $("name").value.trim();
+
+    const room =
+      identity?.room ||
+      $("room").value.trim() ||
+      "party-1";
+
+    if (!name) {
+      showError(new Error("Введите имя игрока."));
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      showError(
+        new Error(
+          "Микрофон недоступен. Откройте игру " +
+          "по HTTPS в отдельной вкладке."
+        )
+      );
+      return;
+    }
+
+    busy = true;
+    clearError();
+    updateControls();
+
+    $("status").textContent =
+      "Ожидаем разрешение на микрофон…";
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
+
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) {
+        throw new Error("Обработка звука не поддерживается.");
+      }
+
+      context = new AudioContextClass();
+      await context.resume();
+
+      analyser = context.createAnalyser();
+      analyser.fftSize = 1024;
+
+      context.createMediaStreamSource(stream).connect(analyser);
+
+      let score = 0;
+
+      if (identity) {
+        const { data, error } = await db
+          .from("players")
+          .select("score")
+          .eq("room", identity.room)
+          .eq("name", identity.name)
+          .maybeSingle();
+
+        if (error) throw error;
+        score = Number(data?.score) || 0;
+      }
+
+      const { error } = await db
+        .from("players")
+        .upsert(
+          {
+            room,
+            name,
+            avatar: selectedAvatar,
+            score
+          },
+          { onConflict: "room,name" }
+        );
+
+      if (error) throw error;
+
+      identity = { name, room };
+      activeRoom = room;
+      mode = "player";
+
+      saveSession();
+
+      running = true;
+      loud = false;
+      lastPoint = -Infinity;
+
+      $("status").textContent =
+        name + ": микрофон включён";
+
+      await loadScores();
+
+      if (!channel) subscribe();
+
+      analyse();
+    } catch (error) {
+      stop();
+
+      if (error.name === "NotAllowedError") {
+        showError(
+          new Error(
+            "Доступ к микрофону запрещён. " +
+            "Разрешите его в браузере. В Meleto " +
+            "также нужно разрешение микрофона для iframe."
+          )
+        );
+      } else if (error.name === "NotFoundError") {
+        showError(new Error("Микрофон не найден."));
+      } else {
+        showError(error);
+      }
+
+      $("status").textContent = "Не удалось начать игру.";
+    } finally {
+      busy = false;
+      updateControls();
+    }
+  }
+
+  function stop() {
+    running = false;
+    loud = false;
+
+    if (frame !== null) {
+      cancelAnimationFrame(frame);
+      frame = null;
+    }
+
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+
+    if (context) {
+      const oldContext = context;
+      context = null;
+      oldContext.close().catch(console.error);
+    }
+
+    analyser = null;
+
+    $("meter").style.width = "0%";
+    $("status").textContent =
+      "Микрофон выключен. Очки сохранены.";
+
+    updateControls();
+  }
+
+  function analyse() {
+    const data = new Uint8Array(analyser.fftSize);
+
+    function tick() {
+      if (!running || !analyser) return;
+
+      analyser.getByteTimeDomainData(data);
+
+      let sum = 0;
+
+      for (const sample of data) {
+        const value = (sample - 128) / 128;
+        sum += value * value;
+      }
+
+      const level = Math.min(
+        100,
+        Math.round(Math.sqrt(sum / data.length) * 300)
+      );
+
+      $("meter").style.width = level + "%";
+
+      if (level >= LOUD_START) {
+        loud = true;
+      } else if (loud && level < LOUD_END) {
+        loud = false;
+
+        const now = performance.now();
+
+        if (!saving && now - lastPoint >= COOLDOWN_MS) {
+          lastPoint = now;
+          addPoint();
+        }
+      }
+
+      frame = requestAnimationFrame(tick);
+    }
+
+    tick();
+  }
+
+  async function addPoint() {
+    if (saving || !identity || mode !== "player") return;
+
+    saving = true;
+    const player = { ...identity };
+
+    try {
+      const { data, error } = await db
+        .from("players")
+        .select("score")
+        .eq("room", player.room)
+        .eq("name", player.name)
+        .single();
+
+      if (error) throw error;
+
+      const nextScore = (Number(data.score) || 0) + 1;
+
+      const { error: updateError } = await db
+        .from("players")
+        .update({ score: nextScore })
+        .eq("room", player.room)
+        .eq("name", player.name)
+        .select("score")
+        .single();
+
+      if (updateError) throw updateError;
+
+      if (running) {
+        $("status").textContent =
+          player.name + ": +1 очко! Всего: " + nextScore;
+      }
+
+      await loadScores();
+    } catch (error) {
+      showError(error);
+    } finally {
+      saving = false;
+      updateControls();
+    }
+  }
+
+  function createCard(name) {
+    const item = document.createElement("li");
+    item.className = "player";
+
+    const score = document.createElement("div");
+    score.className = "score";
+
+    const stage = document.createElement("div");
+    stage.className = "stage";
+
+    const track = document.createElement("div");
+    track.className = "track";
+
+    const inner = document.createElement("div");
+    inner.className = "track-inner";
+
+    const fill = document.createElement("div");
+    fill.className = "fill";
+
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+
+    const label = document.createElement("div");
+    label.className = "name";
+    label.textContent = name;
+    label.title = name;
+
+    inner.append(fill);
+    track.append(inner);
+    stage.append(track, avatar);
+    item.append(score, stage, label);
+
+    return {
+      item,
+      score,
+      fill,
+      avatar,
+      avatarKey: null
+    };
+  }
+
+  function applyAvatar(card, key) {
+    const avatar = AVATARS[key];
+
+    const image = document.createElement("img");
+    image.alt = avatar.label;
+    image.draggable = false;
+
+    const fallback = document.createElement("span");
+    fallback.className = "avatar-fallback";
+    fallback.textContent = avatar.label;
+    fallback.hidden = true;
+
+    image.addEventListener("error", () => {
+      image.hidden = true;
+      fallback.hidden = false;
+
+      showError(
+        new Error(
+          "Не найдена картинка " + avatar.image +
+          ". Загрузите mario.png и luigi.png " +
+          "рядом с index.html."
+        )
+      );
+    });
+
+    image.src = avatar.image;
+
+    card.avatar.replaceChildren(image, fallback);
+    card.item.style.setProperty("--color", avatar.color);
+    card.avatarKey = key;
+  }
+
+  function renderScores(players) {
+    const sorted = [...players].sort((a, b) =>
+      a.name.localeCompare(b.name, "ru")
+    );
+
+    $("empty").hidden = sorted.length > 0;
+
+    const activeNames = new Set(
+      sorted.map(player => player.name)
+    );
+
+    for (const [name, card] of cards) {
+      if (!activeNames.has(name)) {
+        card.item.remove();
+        cards.delete(name);
+      }
+    }
+
+    const container = $("players");
+
+    sorted.forEach((player, index) => {
+      let card = cards.get(player.name);
+
+      if (!card) {
+        card = createCard(player.name);
+        cards.set(player.name, card);
+      }
+
+      const avatarKey = normalizeAvatar(player.avatar);
+      const score = Number(player.score) || 0;
+
+      if (card.avatarKey !== avatarKey) {
+        applyAvatar(card, avatarKey);
+      }
+
+      const scoreText = String(score);
+
+      if (card.score.textContent !== scoreText) {
+        card.score.textContent = scoreText;
+      }
+
+      card.fill.style.height =
+        Math.max(
+          0,
+          Math.min(100, score / MAX_SCORE * 100)
+        ) + "%";
+
+      const current = container.children[index];
+
+      if (current !== card.item) {
+        container.insertBefore(card.item, current || null);
+      }
+    });
+  }
+
+  $("start").addEventListener("click", start);
+  $("stop").addEventListener("click", stop);
+  $("watch").addEventListener("click", toggleWatch);
+
+  window.addEventListener("pagehide", () => {
+    stop();
+
+    if (db) stopSubscription();
+  });
+
+  renderChoices();
+  init();
+})();
+</script>
 </body>
 </html>
