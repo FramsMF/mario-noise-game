@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Шумная вечеринка</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game">
+    <h1>Шумная вечеринка</h1>
+
+    <section class="setup">
+      <label for="playerName">Твоё имя</label>
+      <input id="playerName" type="text" placeholder="Например: Маша" />
+
+      <label for="roomName">Комната</label>
+      <input id="roomName" type="text" value="party-1" />
+
+      <button id="joinButton">Войти в игру</button>
+    </section>
+
+    <section class="controls hidden" id="controls">
+      <p class="status" id="status">Нажми «Начать», чтобы включить микрофон</p>
+
+      <div class="buttons">
+        <button id="startButton">Начать</button>
+        <button id="stopButton" disabled>Стоп</button>
+      </div>
+
+      <div class="meter">
+        <div class="meter-label">Громкость</div>
+        <div class="meter-track">
+          <div class="meter-fill" id="meterFill"></div>
+        </div>
+      </div>
+
+      <p class="hint">
+        Очко начисляется за отдельный громкий звук. Пауза между очками — 1 секунда.
+      </p>
+    </section>
+
+    <section class="scores">
+      <h2>Очки</h2>
+      <ul id="scoreList"></ul>
+    </section>
+
+    <p class="error hidden" id="error"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="game.js"></script>
+</body>
+</html>
