@@ -67,7 +67,7 @@
 
     .stage {
       position: relative;
-      height: 350px;
+      height: 360px;
     }
 
     .track {
@@ -106,14 +106,42 @@
       bottom: 0;
       left: 0;
 
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+
       width: 174px;
-      height: 180px;
+      height: 202px;
+
+      z-index: 2;
     }
 
-    .avatar svg {
+    .avatar img {
       display: block;
       width: 100%;
       height: 100%;
+
+      object-fit: contain;
+      object-position: center bottom;
+
+      animation: none;
+      transition: none;
+    }
+
+    .avatar-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 150px;
+      height: 150px;
+
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      background: #fff;
+
+      font-size: 15px;
+      font-weight: 700;
     }
 
     .name {
@@ -185,17 +213,18 @@
 
     .choices {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
     }
 
     .choice {
-      padding: 5px;
+      padding: 10px;
 
       border: 3px solid transparent;
       border-radius: 12px;
 
       background: #fff;
+      color: var(--ink);
       cursor: pointer;
     }
 
@@ -204,18 +233,27 @@
       background: #e7f5fc;
     }
 
-    .choice svg {
+    .choice img {
       display: block;
+
       width: 100%;
-      height: 72px;
+      height: 110px;
+      margin-bottom: 7px;
+
+      object-fit: contain;
+      object-position: center;
     }
 
     .choice span {
       display: block;
-      padding-bottom: 4px;
+      font-size: 14px;
+      font-weight: 700;
+    }
 
-      color: var(--ink);
-      font-size: 11px;
+    .choice .image-warning {
+      padding: 25px 4px;
+      color: #bd3030;
+      font-size: 12px;
     }
 
     .actions {
@@ -280,6 +318,10 @@
       color: #bd3030;
       font-size: 13px;
       overflow-wrap: anywhere;
+    }
+
+    [hidden] {
+      display: none !important;
     }
 
     @media (max-width: 420px) {
@@ -376,55 +418,32 @@
 
       const STORAGE_KEY = "noise-party-player-v2";
 
-      // При 100 очках шкала заполнена полностью.
       const MAX_SCORE = 100;
-
-      // Порог начала и окончания громкого звука.
       const LOUD_START = 35;
       const LOUD_END = 25;
-
-      // Пауза между начислениями.
       const COOLDOWN_MS = 1000;
 
+      // Если картинки находятся в папке images,
+      // замените пути на ./images/luigi.png
+      // и ./images/mario.png.
       const AVATARS = {
-        green: {
-          label: "Зелёный",
+        luigi: {
+          label: "Луиджи",
           color: "#cbf477",
-          skin: "#f8d2ae",
-          hat: "#239b40",
-          robot: false
+          image: "./luigi.png"
         },
 
-        red: {
-          label: "Красный",
+        mario: {
+          label: "Марио",
           color: "#e69a50",
-          skin: "#f8d2ae",
-          hat: "#f44037",
-          robot: false
-        },
-
-        blue: {
-          label: "Робот",
-          color: "#89bfff",
-          skin: "#badcff",
-          hat: "#4389e8",
-          robot: true
-        },
-
-        purple: {
-          label: "Фиолетовый",
-          color: "#cfafff",
-          skin: "#f4cbe9",
-          hat: "#9955d9",
-          robot: false
+          image: "./mario.png"
         }
       };
 
       const $ = id => document.getElementById(id);
 
       let db = null;
-
-      let selectedAvatar = "green";
+      let selectedAvatar = "luigi";
       let identity = null;
 
       let context = null;
@@ -432,13 +451,13 @@
       let analyser = null;
       let frame = null;
 
+      let ready = false;
       let running = false;
       let busy = false;
       let saving = false;
       let loud = false;
 
       let lastPoint = -Infinity;
-
       let channel = null;
       let timer = null;
       let loadVersion = 0;
@@ -456,210 +475,26 @@
         $("error").textContent = "";
       }
 
-      function avatarSVG(key) {
-        const avatar = AVATARS[key] || AVATARS.green;
-
-        if (avatar.robot) {
-          return `
-            <svg
-              viewBox="0 0 180 190"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <g
-                stroke="#123e52"
-                stroke-width="5"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M90 35V18"
-                  fill="none"
-                />
-
-                <circle
-                  cx="90"
-                  cy="14"
-                  r="9"
-                  fill="${avatar.hat}"
-                />
-
-                <rect
-                  x="14"
-                  y="80"
-                  width="22"
-                  height="48"
-                  rx="7"
-                  fill="${avatar.hat}"
-                />
-
-                <rect
-                  x="144"
-                  y="80"
-                  width="22"
-                  height="48"
-                  rx="7"
-                  fill="${avatar.hat}"
-                />
-
-                <rect
-                  x="29"
-                  y="39"
-                  width="122"
-                  height="131"
-                  rx="30"
-                  fill="${avatar.skin}"
-                />
-
-                <rect
-                  x="43"
-                  y="63"
-                  width="94"
-                  height="48"
-                  rx="17"
-                  fill="white"
-                />
-
-                <circle
-                  cx="66"
-                  cy="87"
-                  r="9"
-                  fill="#123e52"
-                />
-
-                <circle
-                  cx="114"
-                  cy="87"
-                  r="9"
-                  fill="#123e52"
-                />
-
-                <rect
-                  x="57"
-                  y="130"
-                  width="66"
-                  height="18"
-                  rx="6"
-                  fill="${avatar.hat}"
-                />
-              </g>
-            </svg>
-          `;
+      function normalizeAvatar(key) {
+        if (Object.prototype.hasOwnProperty.call(AVATARS, key)) {
+          return key;
         }
 
-        return `
-          <svg
-            viewBox="0 0 180 190"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <g
-              stroke="#123e52"
-              stroke-width="5"
-              stroke-linejoin="round"
-            >
-              <circle
-                cx="30"
-                cy="112"
-                r="17"
-                fill="${avatar.skin}"
-              />
+        // Совместимость с прошлой версией.
+        if (key === "red") return "mario";
 
-              <circle
-                cx="150"
-                cy="112"
-                r="17"
-                fill="${avatar.skin}"
-              />
+        return "luigi";
+      }
 
-              <ellipse
-                cx="90"
-                cy="112"
-                rx="61"
-                ry="67"
-                fill="${avatar.skin}"
-              />
+      function createAvatarImage(key) {
+        const avatar = AVATARS[normalizeAvatar(key)];
 
-              <path
-                d="
-                  M27 83
-                  Q19 15 90 13
-                  Q161 15 153 83
-                  L133 89
-                  H47
-                  Z
-                "
-                fill="${avatar.hat}"
-              />
+        const image = document.createElement("img");
+        image.alt = avatar.label;
+        image.draggable = false;
+        image.src = avatar.image;
 
-              <ellipse
-                cx="90"
-                cy="71"
-                rx="54"
-                ry="20"
-                fill="${avatar.hat}"
-              />
-
-              <circle
-                cx="90"
-                cy="42"
-                r="20"
-                fill="white"
-              />
-
-              <path
-                d="M80 43L88 51L103 32"
-                fill="none"
-                stroke="${avatar.hat}"
-                stroke-width="7"
-              />
-
-              <ellipse
-                cx="68"
-                cy="104"
-                rx="13"
-                ry="19"
-                fill="white"
-              />
-
-              <ellipse
-                cx="112"
-                cy="104"
-                rx="13"
-                ry="19"
-                fill="white"
-              />
-
-              <ellipse
-                cx="70"
-                cy="108"
-                rx="5"
-                ry="10"
-                fill="#123e52"
-              />
-
-              <ellipse
-                cx="110"
-                cy="108"
-                rx="5"
-                ry="10"
-                fill="#123e52"
-              />
-
-              <ellipse
-                cx="90"
-                cy="126"
-                rx="23"
-                ry="17"
-                fill="${avatar.skin}"
-              />
-
-              <path
-                d="M62 148Q90 176 118 148Z"
-                fill="white"
-              />
-            </g>
-          </svg>
-        `;
+        return image;
       }
 
       function renderChoices() {
@@ -670,52 +505,62 @@
           button.className = "choice";
           button.dataset.avatar = key;
 
-          button.setAttribute(
-            "aria-pressed",
-            String(key === selectedAvatar)
-          );
+          const image = createAvatarImage(key);
 
-          // Здесь используются только фиксированные SVG.
-          button.innerHTML =
-            avatarSVG(key) +
-            `<span>${avatar.label}</span>`;
+          const warning = document.createElement("span");
+          warning.className = "image-warning";
+          warning.textContent =
+            "Не найден файл " + avatar.image;
+          warning.hidden = true;
+
+          image.addEventListener("error", () => {
+            image.hidden = true;
+            warning.hidden = false;
+          });
+
+          const label = document.createElement("span");
+          label.textContent = avatar.label;
+
+          button.append(image, warning, label);
 
           button.addEventListener("click", () => {
-            if (running || busy) return;
+            if (!ready || running || busy || saving) return;
 
             selectedAvatar = key;
-            updateChoices();
+            updateControls();
 
             $("status").textContent =
-              "Аватар выбран. Нажмите «Начать», чтобы применить.";
+              "Выбран " + avatar.label +
+              ". Нажмите «Начать», чтобы применить.";
           });
 
           $("choices").appendChild(button);
         }
+
+        updateControls();
       }
 
-      function updateChoices() {
+      function updateControls() {
+        $("start").disabled =
+          !ready || busy || running || saving;
+
+        $("stop").disabled = !running;
+
+        $("name").disabled =
+          !ready || busy || running || Boolean(identity);
+
+        $("room").disabled =
+          !ready || busy || running || Boolean(identity);
+
         document.querySelectorAll(".choice").forEach(button => {
           button.setAttribute(
             "aria-pressed",
             String(button.dataset.avatar === selectedAvatar)
           );
 
-          button.disabled = running || busy;
+          button.disabled =
+            !ready || busy || running || saving;
         });
-      }
-
-      function updateControls() {
-        $("start").disabled = busy || running;
-        $("stop").disabled = !running;
-
-        $("name").disabled =
-          busy || running || Boolean(identity);
-
-        $("room").disabled =
-          busy || running || Boolean(identity);
-
-        updateChoices();
       }
 
       function saveIdentity() {
@@ -744,7 +589,6 @@
             SUPABASE_KEY
           );
 
-          // Проверяем доступность хранилища вкладки.
           const testKey = STORAGE_KEY + "-test";
           sessionStorage.setItem(testKey, "1");
           sessionStorage.removeItem(testKey);
@@ -771,15 +615,13 @@
               room: previous.room
             };
 
-            selectedAvatar = AVATARS[previous.avatar]
-              ? previous.avatar
-              : "green";
+            selectedAvatar =
+              normalizeAvatar(previous.avatar);
 
             $("name").value = identity.name;
             $("room").value = identity.room;
 
-            // При обновлении страницы сбрасывается
-            // только результат игрока этой вкладки.
+            // Обнуляем только игрока этой вкладки.
             const { error } = await db
               .from("players")
               .update({ score: 0 })
@@ -792,27 +634,30 @@
             subscribe();
 
             $("status").textContent =
-              "Ваши очки сброшены. Выберите аватар и нажмите «Начать».";
+              "Ваши очки сброшены. " +
+              "Выберите аватар и нажмите «Начать».";
           } else {
             $("status").textContent =
-              "Введите имя, выберите аватар и нажмите «Начать».";
+              "Введите имя, выберите аватар " +
+              "и нажмите «Начать».";
           }
 
-          busy = false;
-          updateControls();
+          ready = true;
         } catch (error) {
+          ready = false;
           showError(error);
 
           $("status").textContent =
-            "Не удалось подготовить игру. Проверьте ошибку ниже.";
-
-          $("start").disabled = true;
-          $("stop").disabled = true;
+            "Не удалось подготовить игру. " +
+            "Проверьте ошибку ниже и обновите страницу.";
+        } finally {
+          busy = false;
+          updateControls();
         }
       }
 
       async function start() {
-        if (busy || running) return;
+        if (!ready || busy || running || saving) return;
 
         const name =
           identity?.name || $("name").value.trim();
@@ -830,8 +675,8 @@
         if (!navigator.mediaDevices?.getUserMedia) {
           showError(
             new Error(
-              "Микрофон недоступен. Откройте сайт " +
-              "по HTTPS в отдельной вкладке."
+              "Микрофон недоступен. " +
+              "Откройте игру по HTTPS в отдельной вкладке."
             )
           );
           return;
@@ -839,11 +684,10 @@
 
         busy = true;
         clearError();
+        updateControls();
 
         $("status").textContent =
           "Разрешите доступ к микрофону…";
-
-        updateControls();
 
         try {
           stream =
@@ -861,7 +705,7 @@
 
           if (!AudioContextClass) {
             throw new Error(
-              "Обработка звука не поддерживается."
+              "Браузер не поддерживает обработку звука."
             );
           }
 
@@ -877,8 +721,7 @@
           source.connect(analyser);
 
           if (!identity) {
-            // Первый запуск в этой вкладке:
-            // создаём игрока с выбранным аватаром.
+            // Первый старт в этой вкладке.
             const { error } = await db
               .from("players")
               .upsert(
@@ -897,15 +740,24 @@
 
             identity = { name, room };
           } else {
-            // После «Стоп» можно сменить аватар.
-            // Накопленные очки при этом сохраняются.
+            // Применяем аватар, сохраняя текущие очки.
+            const { data: existing, error: readError } = await db
+              .from("players")
+              .select("score")
+              .eq("room", identity.room)
+              .eq("name", identity.name)
+              .maybeSingle();
+
+            if (readError) throw readError;
+
             const { error } = await db
               .from("players")
               .upsert(
                 {
                   room: identity.room,
                   name: identity.name,
-                  avatar: selectedAvatar
+                  avatar: selectedAvatar,
+                  score: Number(existing?.score) || 0
                 },
                 {
                   onConflict: "room,name"
@@ -926,9 +778,7 @@
 
           await loadScores();
 
-          if (!channel) {
-            subscribe();
-          }
+          if (!channel) subscribe();
 
           analyse();
         } catch (error) {
@@ -938,8 +788,8 @@
             showError(
               new Error(
                 "Доступ к микрофону запрещён. " +
-                "Разрешите его в браузере. Если игра " +
-                "открыта в Meleto, проверьте разрешение " +
+                "Разрешите его в браузере. " +
+                "В Meleto также требуется разрешение " +
                 "микрофона для iframe."
               )
             );
@@ -991,7 +841,8 @@
         $("meter").style.width = "0%";
 
         $("status").textContent =
-          "Микрофон выключен. Можно выбрать другой аватар.";
+          "Микрофон выключен. " +
+          "Можно выбрать другой аватар.";
 
         updateControls();
       }
@@ -1023,10 +874,7 @@
 
           if (level >= LOUD_START) {
             loud = true;
-          } else if (
-            loud &&
-            level < LOUD_END
-          ) {
+          } else if (loud && level < LOUD_END) {
             loud = false;
 
             const now = performance.now();
@@ -1066,9 +914,7 @@
 
           const { error: updateError } = await db
             .from("players")
-            .update({
-              score: nextScore
-            })
+            .update({ score: nextScore })
             .eq("room", identity.room)
             .eq("name", identity.name)
             .select("score")
@@ -1088,6 +934,7 @@
           showError(error);
         } finally {
           saving = false;
+          updateControls();
         }
       }
 
@@ -1096,22 +943,19 @@
 
         const version = ++loadVersion;
 
-        try {
-          const { data, error } = await db
-            .from("players")
-            .select("name, score, avatar")
-            .eq("room", identity.room);
+        const { data, error } = await db
+          .from("players")
+          .select("name, score, avatar")
+          .eq("room", identity.room);
 
-          if (error) throw error;
-
-          if (version !== loadVersion) return;
-
-          renderScores(data || []);
-        } catch (error) {
-          if (version === loadVersion) {
-            showError(error);
-          }
+        if (error) {
+          if (version === loadVersion) showError(error);
+          return;
         }
+
+        if (version !== loadVersion) return;
+
+        renderScores(data || []);
       }
 
       function subscribe() {
@@ -1125,22 +969,19 @@
               table: "players"
             },
             () => {
-              loadScores();
+              loadScores().catch(showError);
             }
           )
           .subscribe(status => {
             if (status === "SUBSCRIBED") {
-              loadScores();
+              loadScores().catch(showError);
             }
           });
 
-        if (timer) {
-          clearInterval(timer);
-        }
+        if (timer) clearInterval(timer);
 
-        // Резервное обновление при сбое Realtime.
         timer = setInterval(() => {
-          loadScores();
+          loadScores().catch(showError);
         }, 5000);
       }
 
@@ -1185,6 +1026,41 @@
         };
       }
 
+      function applyCardAvatar(card, key) {
+        const avatar = AVATARS[key];
+
+        card.avatar.replaceChildren();
+
+        const image = createAvatarImage(key);
+
+        const fallback = document.createElement("span");
+        fallback.className = "avatar-fallback";
+        fallback.textContent = avatar.label;
+        fallback.hidden = true;
+
+        image.addEventListener("error", () => {
+          image.hidden = true;
+          fallback.hidden = false;
+
+          showError(
+            new Error(
+              "Не найдена картинка " + avatar.image +
+              ". Загрузите mario.png и luigi.png " +
+              "рядом с index.html."
+            )
+          );
+        });
+
+        card.avatar.append(image, fallback);
+
+        card.item.style.setProperty(
+          "--color",
+          avatar.color
+        );
+
+        card.avatarKey = key;
+      }
+
       function renderScores(players) {
         const sorted = [...players].sort((a, b) =>
           a.name.localeCompare(b.name, "ru")
@@ -1213,25 +1089,14 @@
             cards.set(player.name, card);
           }
 
-          const avatarKey = AVATARS[player.avatar]
-            ? player.avatar
-            : "green";
-
-          const avatar = AVATARS[avatarKey];
+          const avatarKey =
+            normalizeAvatar(player.avatar);
 
           const score =
             Number(player.score) || 0;
 
           if (card.avatarKey !== avatarKey) {
-            card.avatarKey = avatarKey;
-
-            card.avatar.innerHTML =
-              avatarSVG(avatarKey);
-
-            card.item.style.setProperty(
-              "--color",
-              avatar.color
-            );
+            applyCardAvatar(card, avatarKey);
           }
 
           const scoreText = String(score);
@@ -1240,17 +1105,17 @@
             card.score.textContent = scoreText;
           }
 
-          card.fill.style.height =
-            Math.max(
-              0,
-              Math.min(
-                100,
-                score / MAX_SCORE * 100
-              )
-            ) + "%";
+          const percentage = Math.max(
+            0,
+            Math.min(
+              100,
+              score / MAX_SCORE * 100
+            )
+          );
 
-          const current =
-            container.children[index];
+          card.fill.style.height = percentage + "%";
+
+          const current = container.children[index];
 
           if (current !== card.item) {
             container.insertBefore(
@@ -1267,9 +1132,7 @@
       window.addEventListener("pagehide", () => {
         stop();
 
-        if (timer) {
-          clearInterval(timer);
-        }
+        if (timer) clearInterval(timer);
 
         if (channel && db) {
           db.removeChannel(channel);
