@@ -36,9 +36,11 @@
     position: sticky;
     top: 0;
     z-index: 100;
+
     max-width: 450px;
     margin: 0 auto 18px;
     padding: 8px 0;
+
     background: #fff;
   }
 
@@ -75,6 +77,7 @@
 
   .score {
     height: 48px;
+
     font-size: 40px;
     line-height: 44px;
     font-weight: 800;
@@ -124,6 +127,7 @@
     width: 174px;
     height: 202px;
 
+    transform-origin: center bottom;
     z-index: 2;
   }
 
@@ -137,6 +141,25 @@
 
     object-fit: contain;
     object-position: center bottom;
+  }
+
+  .avatar.is-speaking {
+    animation: gentle-speaking 650ms ease-in-out infinite;
+  }
+
+  @keyframes gentle-speaking {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    35% {
+      transform: translateY(-2px) rotate(-0.5deg);
+    }
+
+    70% {
+      transform: translateY(-1px) rotate(0.5deg);
+    }
   }
 
   .avatar-fallback {
@@ -246,9 +269,11 @@
 
   .choice img {
     display: block;
+
     width: 100%;
     height: 85px;
     margin-bottom: 7px;
+
     object-fit: contain;
   }
 
@@ -349,6 +374,16 @@
     display: none !important;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .avatar.is-speaking {
+      animation: none;
+    }
+
+    .fill {
+      transition: none;
+    }
+  }
+
   @media (max-width: 420px) {
     .players {
       justify-content: flex-start;
@@ -437,8 +472,8 @@
     </p>
 
     <p id="error" class="error" role="alert"></p>
-  </section>
 
+  </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -459,37 +494,37 @@
   const LOUD_START = 35;
   const LOUD_END = 25;
   const COOLDOWN_MS = 1000;
-
-  // Для коротких пауз внутри одного звука.
   const SILENCE_MS = 180;
 
+  // image — закрытый рот, файл с цифрой 2.
+  // talkingImage — открытый рот, файл без цифры 2.
   const AVATARS = {
     luigi: {
       label: "Луиджи",
       color: "#cbf477",
-      image: "./luigi.png",
-      talkingImage: "./luigi2.png"
+      image: "./luigi2.png",
+      talkingImage: "./luigi.png"
     },
 
     mario: {
       label: "Марио",
       color: "#e69a50",
-      image: "./mario.png",
-      talkingImage: "./mario2.png"
+      image: "./mario2.png",
+      talkingImage: "./mario.png"
     },
 
     peach: {
       label: "Пич",
       color: "#f5acd4",
-      image: "./peach.png",
-      talkingImage: "./peach2.png"
+      image: "./peach2.png",
+      talkingImage: "./peach.png"
     },
 
     yoshi: {
       label: "Йоши",
       color: "#79d8a0",
-      image: "./Yoshi.png",
-      talkingImage: "./yoshi2.png"
+      image: "./yoshi2.png",
+      talkingImage: "./Yoshi.png"
     }
   };
 
@@ -530,6 +565,7 @@
 
   function showError(error) {
     console.error(error);
+
     $("error").textContent =
       error?.message || String(error);
   }
@@ -546,7 +582,6 @@
     return key === "red" ? "mario" : "luigi";
   }
 
-  // Предзагрузка обычных картинок и открытых ртов.
   for (const avatar of Object.values(AVATARS)) {
     for (const path of [avatar.image, avatar.talkingImage]) {
       const image = new Image();
@@ -573,6 +608,7 @@
   function renderChoices() {
     for (const [key, avatar] of Object.entries(AVATARS)) {
       const button = document.createElement("button");
+
       button.type = "button";
       button.className = "choice";
       button.dataset.avatar = key;
@@ -601,8 +637,11 @@
 
       button.addEventListener("click", () => {
         if (
-          !ready || busy || running ||
-          saving || mode === "watch"
+          !ready ||
+          busy ||
+          running ||
+          saving ||
+          mode === "watch"
         ) {
           return;
         }
@@ -628,25 +667,38 @@
     $("meterSection").hidden = watching;
 
     $("start").disabled =
-      !ready || busy || running ||
-      saving || publishingLoud || watching;
+      !ready ||
+      busy ||
+      running ||
+      saving ||
+      publishingLoud ||
+      watching;
 
     $("stop").disabled = !running;
 
     $("watch").disabled =
-      !ready || busy || running ||
-      saving || publishingLoud;
+      !ready ||
+      busy ||
+      running ||
+      saving ||
+      publishingLoud;
 
     $("watch").textContent = watching
       ? "Вернуться к игре"
       : "Показать очки игроков";
 
     $("name").disabled =
-      !ready || busy || running || Boolean(identity);
+      !ready ||
+      busy ||
+      running ||
+      Boolean(identity);
 
     $("room").disabled =
-      !ready || busy || running ||
-      Boolean(identity) || watching;
+      !ready ||
+      busy ||
+      running ||
+      Boolean(identity) ||
+      watching;
 
     document.querySelectorAll(".choice").forEach(button => {
       button.setAttribute(
@@ -655,8 +707,11 @@
       );
 
       button.disabled =
-        !ready || busy || running ||
-        saving || watching;
+        !ready ||
+        busy ||
+        running ||
+        saving ||
+        watching;
     });
 
     $("hint").textContent = watching
@@ -667,6 +722,7 @@
         "обнуляет его результат.";
 
     $("roomTitle").hidden = !activeRoom;
+
     $("roomTitle").textContent = activeRoom
       ? "Комната: " + activeRoom
       : "";
@@ -674,10 +730,11 @@
 
   function clearCards() {
     ++loadVersion;
+
     cards.clear();
     $("players").replaceChildren();
-    $("empty").hidden = false;
 
+    $("empty").hidden = false;
     $("empty").textContent =
       "Начните игру или откройте табло комнаты";
   }
@@ -695,6 +752,11 @@
 
     card.fallback.hidden =
       !(card.normalFailed && !showTalking);
+
+    card.avatar.classList.toggle(
+      "is-speaking",
+      card.mouthOpen
+    );
   }
 
   function applyAvatar(card, key) {
@@ -729,7 +791,10 @@
       updateCardMouth(card, card.mouthOpen);
 
       showError(
-        new Error("Не найдена картинка " + avatar.image)
+        new Error(
+          "Не найдена картинка закрытого рта: " +
+          avatar.image
+        )
       );
     });
 
@@ -776,6 +841,7 @@
 
   function setSoundState(value) {
     desiredLoud = Boolean(value);
+
     showOwnMouth(desiredLoud);
     publishSoundState();
   }
@@ -907,7 +973,7 @@
 
         if (status === "SUBSCRIBED") {
           $("connection").textContent =
-            "Онлайн: очки и состояние аватаров обновляются.";
+            "Онлайн: очки и аватары обновляются.";
 
           loadScores().catch(showError);
         } else if (
@@ -942,6 +1008,7 @@
       );
 
       const testKey = STORAGE_KEY + "-test";
+
       sessionStorage.setItem(testKey, "1");
       sessionStorage.removeItem(testKey);
 
@@ -965,6 +1032,7 @@
       ) {
         mode = "watch";
         activeRoom = previous.room;
+
         $("room").value = activeRoom;
 
         await loadScores();
@@ -1031,8 +1099,11 @@
 
   async function toggleWatch() {
     if (
-      !ready || busy || running ||
-      saving || publishingLoud
+      !ready ||
+      busy ||
+      running ||
+      saving ||
+      publishingLoud
     ) {
       return;
     }
@@ -1056,8 +1127,6 @@
           "Введите имя, выберите аватар " +
           "и нажмите «Начать».";
       } else {
-        // Перед переходом в табло закрываем рот
-        // прежнего игрока, если он был.
         if (identity) {
           const { error } = await db
             .from("players")
@@ -1105,8 +1174,11 @@
 
   async function start() {
     if (
-      !ready || busy || running ||
-      saving || publishingLoud ||
+      !ready ||
+      busy ||
+      running ||
+      saving ||
+      publishingLoud ||
       mode === "watch"
     ) {
       return;
@@ -1227,7 +1299,9 @@
 
       await loadScores();
 
-      if (!channel) subscribe();
+      if (!channel) {
+        subscribe();
+      }
 
       analyse();
     } catch (error) {
@@ -1331,12 +1405,17 @@
           loud = true;
           setSoundState(true);
         }
-      } else if (loud && level < LOUD_END) {
+      } else if (
+        loud &&
+        level < LOUD_END
+      ) {
         if (silenceSince === null) {
           silenceSince = now;
         }
 
-        if (now - silenceSince >= SILENCE_MS) {
+        if (
+          now - silenceSince >= SILENCE_MS
+        ) {
           loud = false;
           silenceSince = null;
 
@@ -1362,7 +1441,8 @@
 
   async function addPoint() {
     if (
-      saving || !identity ||
+      saving ||
+      !identity ||
       mode !== "player"
     ) {
       return;
@@ -1387,7 +1467,9 @@
 
       const { error: updateError } = await db
         .from("players")
-        .update({ score: nextScore })
+        .update({
+          score: nextScore
+        })
         .eq("room", player.room)
         .eq("name", player.name)
         .select("score")
@@ -1501,8 +1583,6 @@
         identity &&
         player.name === identity.name;
 
-      // У себя используем локальный сигнал,
-      // чтобы рот не зависел от задержки сети.
       const mouthOpen = ownPlayer
         ? desiredLoud
         : Boolean(player.is_loud);
@@ -1511,7 +1591,9 @@
 
       const scoreText = String(score);
 
-      if (card.score.textContent !== scoreText) {
+      if (
+        card.score.textContent !== scoreText
+      ) {
         card.score.textContent = scoreText;
       }
 
