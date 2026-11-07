@@ -17,7 +17,7 @@ const meterFill = document.getElementById("meterFill");
 const scoreList = document.getElementById("scoreList");
 const errorElement = document.getElementById("error");
 
-const supabase = window.supabase.createClient(
+const db = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
