@@ -56,11 +56,13 @@ async function joinGame() {
         name: playerName,
         score: 0
       },
-      { onConflict: "room,name" }
+      {
+        onConflict: "room,name"
+      }
     );
 
   if (error) {
-    console.error("Supabase error:", error);
+    console.error("Supabase upsert error:", error);
     showError("Не удалось войти: " + error.message);
     return;
   }
@@ -75,7 +77,9 @@ async function joinGame() {
 }
 
 async function startListening() {
-  if (isRunning) return;
+  if (isRunning) {
+    return;
+  }
 
   try {
     hideError();
@@ -89,6 +93,7 @@ async function startListening() {
     });
 
     audioContext = new AudioContext();
+
     const source = audioContext.createMediaStreamSource(audioStream);
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 1024;
@@ -104,9 +109,9 @@ async function startListening() {
     statusElement.textContent = "Микрофон активен";
 
     listenToMicrophone();
-  } catch (err) {
-    console.error("Microphone error:", err);
-    showError("Нет доступа к микрофону: " + err.message);
+  } catch (error) {
+    console.error("Microphone error:", error);
+    showError("Нет доступа к микрофону: " + error.message);
   }
 }
 
@@ -114,7 +119,9 @@ function listenToMicrophone() {
   const data = new Uint8Array(analyser.fftSize);
 
   function check() {
-    if (!isRunning) return;
+    if (!isRunning) {
+      return;
+    }
 
     analyser.getByteTimeDomainData(data);
 
@@ -136,6 +143,7 @@ function listenToMicrophone() {
 
     if (isLoud && level < LOUD_END && canScore) {
       addPoint();
+
       isLoud = false;
       canScore = false;
 
@@ -209,7 +217,9 @@ async function loadScores() {
     .from("players")
     .select("name, score")
     .eq("room", roomName)
-    .order("score", { ascending: false });
+    .order("score", {
+      ascending: false
+    });
 
   if (error) {
     console.error("Load scores error:", error);
