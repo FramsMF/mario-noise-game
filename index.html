@@ -42,8 +42,10 @@
       justify-content: center;
       align-items: flex-start;
       gap: 36px;
+
       width: max-content;
       min-width: 100%;
+
       margin: 0;
       padding: 0 12px;
       list-style: none;
@@ -57,6 +59,7 @@
 
     .score {
       height: 49px;
+
       color: var(--ink);
       font-size: 40px;
       line-height: 44px;
@@ -73,9 +76,11 @@
       position: absolute;
       top: 0;
       left: 50%;
+
       width: 94px;
       height: 290px;
       padding: 7px;
+
       transform: translateX(-50%);
       background: var(--track);
     }
@@ -91,66 +96,57 @@
       right: 0;
       bottom: 0;
       left: 0;
+
       height: 0;
       background: var(--fill);
+
       transition: height 250ms ease;
     }
 
     /*
-      Персонажи вырезаются визуально из example.jpg.
-      Расчёт сделан под присланную картинку 470 × 494.
+      Персонажи берутся из example.jpg.
+      Нужна исходная картинка размером 470 × 494.
+      Фигурная обрезка отключена.
     */
 
     .avatar {
       position: absolute;
       bottom: 0;
       left: 50%;
+
       width: 174px;
       height: 202px;
+
       transform: translateX(-50%);
-      background-image: url("example.jpg");
+
+      background-image: url("./example.jpg");
       background-repeat: no-repeat;
       background-size: 470px 494px;
+
+      clip-path: none;
+      animation: none;
+      transition: none;
+
       z-index: 2;
     }
 
     .avatar.luigi {
       background-position: -52px -238px;
-
-      clip-path: polygon(
-        42% 0%, 58% 0%, 75% 8%,
-        90% 25%, 96% 43%, 91% 53%,
-        100% 59%, 98% 68%, 88% 76%,
-        81% 78%, 75% 89%, 63% 98%,
-        45% 100%, 31% 93%, 22% 81%,
-        11% 76%, 3% 65%, 3% 56%,
-        10% 50%, 7% 39%, 14% 23%,
-        27% 8%
-      );
     }
 
     .avatar.mario {
       background-position: -257px -242px;
-
-      clip-path: polygon(
-        42% 4%, 59% 4%, 78% 12%,
-        92% 27%, 97% 44%, 92% 54%,
-        99% 58%, 99% 69%, 89% 77%,
-        81% 80%, 72% 92%, 60% 99%,
-        44% 99%, 30% 92%, 22% 81%,
-        11% 77%, 3% 67%, 3% 57%,
-        9% 52%, 7% 40%, 13% 25%,
-        26% 12%
-      );
     }
 
     .name {
       margin-top: 6px;
       overflow: hidden;
+
       color: var(--ink);
       font-size: 40px;
       line-height: 48px;
       font-weight: 800;
+
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -165,6 +161,7 @@
       width: min(100%, 430px);
       margin: 24px auto 0;
       padding: 16px;
+
       border: 1px solid #dce8ee;
       border-radius: 14px;
       background: #f7fbfd;
@@ -187,8 +184,10 @@
       width: 100%;
       margin-top: 6px;
       padding: 10px;
+
       border: 1px solid #c9dce5;
       border-radius: 8px;
+
       background: #fff;
       color: var(--ink);
     }
@@ -196,10 +195,13 @@
     button {
       width: 100%;
       padding: 11px;
+
       border: 0;
       border-radius: 9px;
+
       background: var(--ink);
       color: #fff;
+
       font-weight: 700;
       cursor: pointer;
     }
@@ -232,6 +234,7 @@
       height: 8px;
       margin-top: 14px;
       overflow: hidden;
+
       border-radius: 99px;
       background: #dce9ef;
     }
@@ -276,6 +279,7 @@
 
 <body>
   <main class="game">
+
     <section class="arena">
       <ul id="players" class="players"></ul>
 
@@ -285,6 +289,7 @@
     </section>
 
     <section class="panel">
+
       <div id="setup">
         <div class="fields">
           <label>
@@ -317,8 +322,13 @@
         </p>
 
         <div class="buttons">
-          <button id="start" type="button">Начать</button>
-          <button id="stop" type="button" disabled>Стоп</button>
+          <button id="start" type="button">
+            Начать
+          </button>
+
+          <button id="stop" type="button" disabled>
+            Стоп
+          </button>
         </div>
 
         <div class="meter">
@@ -332,6 +342,7 @@
 
       <p id="error" class="error hidden" role="alert"></p>
     </section>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -346,16 +357,20 @@
       const SUPABASE_KEY =
         "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
 
+      // При 100 очках шкала заполнена целиком.
       const MAX_SCORE = 100;
+
       const LOUD_START = 35;
       const LOUD_END = 25;
       const COOLDOWN_MS = 1000;
 
       const $ = id => document.getElementById(id);
 
-      let db;
+      let db = null;
+
       let playerName = "";
       let roomName = "";
+
       let channel = null;
       let refreshTimer = null;
 
@@ -366,17 +381,16 @@
 
       let running = false;
       let starting = false;
-      let loud = false;
       let saving = false;
+      let loud = false;
+
       let lastPoint = -Infinity;
       let loadVersion = 0;
 
-      // Храним DOM-карточки, чтобы заполнение шкал
-      // плавно менялось без пересоздания всей таблицы.
       const cards = new Map();
 
-      function showError(message) {
-        $("error").textContent = message;
+      function showError(text) {
+        $("error").textContent = text;
         $("error").classList.remove("hidden");
       }
 
@@ -408,11 +422,18 @@
       $("start").addEventListener("click", start);
       $("stop").addEventListener("click", stop);
 
+      $("playerName").addEventListener("keydown", event => {
+        if (event.key === "Enter" && !$("join").disabled) {
+          joinGame();
+        }
+      });
+
       async function joinGame() {
         if ($("join").disabled) return;
 
         const name = $("playerName").value.trim();
-        const room = $("roomName").value.trim() || "party-1";
+        const room =
+          $("roomName").value.trim() || "party-1";
 
         if (!name) {
           showError("Введите имя.");
@@ -420,6 +441,7 @@
         }
 
         clearError();
+
         $("join").disabled = true;
         $("join").textContent = "Подключение…";
 
@@ -451,6 +473,10 @@
 
           await loadScores();
 
+          if (channel) {
+            db.removeChannel(channel);
+          }
+
           channel = db
             .channel("party-" + crypto.randomUUID())
             .on(
@@ -460,7 +486,9 @@
                 schema: "public",
                 table: "players"
               },
-              loadScores
+              () => {
+                loadScores();
+              }
             )
             .subscribe(status => {
               if (status === "SUBSCRIBED") {
@@ -468,10 +496,19 @@
               }
             });
 
-          refreshTimer = setInterval(loadScores, 5000);
+          if (refreshTimer) {
+            clearInterval(refreshTimer);
+          }
+
+          refreshTimer = setInterval(() => {
+            loadScores();
+          }, 5000);
         } catch (error) {
           console.error(error);
-          showError("Не удалось войти: " + message(error));
+
+          showError(
+            "Не удалось войти: " + message(error)
+          );
         } finally {
           $("join").disabled = false;
           $("join").textContent = "Войти в игру";
@@ -490,6 +527,7 @@
             .eq("room", roomName);
 
           if (error) throw error;
+
           if (version !== loadVersion) return;
 
           renderScores(data || []);
@@ -497,7 +535,9 @@
           console.error(error);
 
           if (version === loadVersion) {
-            showError("Ошибка загрузки очков: " + message(error));
+            showError(
+              "Ошибка загрузки очков: " + message(error)
+            );
           }
         }
       }
@@ -522,8 +562,8 @@
         const fill = document.createElement("div");
         fill.className = "fill";
 
-        inner.append(fill);
-        track.append(inner);
+        inner.appendChild(fill);
+        track.appendChild(inner);
 
         const avatar = document.createElement("div");
         avatar.className = "avatar";
@@ -538,7 +578,13 @@
 
         item.append(score, stage, label);
 
-        return { item, score, fill, avatar };
+        return {
+          item,
+          score,
+          fill,
+          avatar,
+          character: null
+        };
       }
 
       function renderScores(players) {
@@ -546,16 +592,23 @@
           a.name.localeCompare(b.name, "ru")
         );
 
-        $("empty").classList.toggle("hidden", sorted.length > 0);
+        $("empty").classList.toggle(
+          "hidden",
+          sorted.length > 0
+        );
 
-        const names = new Set(sorted.map(player => player.name));
+        const activeNames = new Set(
+          sorted.map(player => player.name)
+        );
 
         for (const [name, card] of cards) {
-          if (!names.has(name)) {
+          if (!activeNames.has(name)) {
             card.item.remove();
             cards.delete(name);
           }
         }
+
+        const container = $("players");
 
         sorted.forEach((player, index) => {
           let card = cards.get(player.name);
@@ -566,27 +619,46 @@
           }
 
           const green = index % 2 === 0;
+          const character = green ? "luigi" : "mario";
+
           const score = Number(player.score) || 0;
+
           const percent = Math.max(
             0,
             Math.min(100, score / MAX_SCORE * 100)
           );
 
-          card.item.style.setProperty(
-            "--fill",
-            green ? "#d3f77d" : "#dc9146"
-          );
+          // Не переназначаем персонажа без необходимости.
+          if (card.character !== character) {
+            card.character = character;
 
-          card.avatar.className =
-            "avatar " + (green ? "luigi" : "mario");
+            card.item.style.setProperty(
+              "--fill",
+              green ? "#d3f77d" : "#dc9146"
+            );
 
-          card.score.textContent = String(score);
+            card.avatar.className =
+              "avatar " + character;
+          }
 
-          $("players").append(card.item);
+          const scoreText = String(score);
 
-          requestAnimationFrame(() => {
-            card.fill.style.height = percent + "%";
-          });
+          if (card.score.textContent !== scoreText) {
+            card.score.textContent = scoreText;
+          }
+
+          // Не перемещаем карточку, если она уже
+          // находится на правильном месте.
+          const currentItem = container.children[index];
+
+          if (currentItem !== card.item) {
+            container.insertBefore(
+              card.item,
+              currentItem || null
+            );
+          }
+
+          card.fill.style.height = percent + "%";
         });
       }
 
@@ -597,27 +669,37 @@
 
         if (!navigator.mediaDevices?.getUserMedia) {
           showError(
-            "Микрофон недоступен. Откройте сайт по HTTPS " +
-            "в отдельной вкладке."
+            "Микрофон недоступен. Откройте сайт " +
+            "по HTTPS в отдельной вкладке."
           );
           return;
         }
 
         starting = true;
+
         $("start").disabled = true;
-        $("status").textContent = "Ожидаем разрешение на микрофон…";
+        $("status").textContent =
+          "Ожидаем разрешение на микрофон…";
 
         try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: false,
-              autoGainControl: false
-            }
-          });
+          stream =
+            await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: false,
+                autoGainControl: false
+              }
+            });
 
           const AudioContextClass =
-            window.AudioContext || window.webkitAudioContext;
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+          if (!AudioContextClass) {
+            throw new Error(
+              "Браузер не поддерживает обработку звука."
+            );
+          }
 
           context = new AudioContextClass();
           await context.resume();
@@ -625,7 +707,9 @@
           analyser = context.createAnalyser();
           analyser.fftSize = 1024;
 
-          const source = context.createMediaStreamSource(stream);
+          const source =
+            context.createMediaStreamSource(stream);
+
           source.connect(analyser);
 
           running = true;
@@ -633,19 +717,27 @@
           lastPoint = -Infinity;
 
           $("stop").disabled = false;
-          $("status").textContent = playerName + ": микрофон включён";
+
+          $("status").textContent =
+            playerName + ": микрофон включён";
 
           analyse();
         } catch (error) {
           console.error(error);
+
           stop();
 
-          showError(
-            error.name === "NotAllowedError"
-              ? "Микрофон запрещён. Разрешите его в браузере. " +
-                "В Meleto также требуется разрешение микрофона для iframe."
-              : "Ошибка микрофона: " + message(error)
-          );
+          if (error.name === "NotAllowedError") {
+            showError(
+              "Микрофон запрещён. Разрешите его " +
+              "в браузере. Если игра открыта в Meleto, " +
+              "проверьте доступ к микрофону внутри iframe."
+            );
+          } else {
+            showError(
+              "Ошибка микрофона: " + message(error)
+            );
+          }
         } finally {
           starting = false;
           $("start").disabled = running;
@@ -668,7 +760,11 @@
           }
 
           const rms = Math.sqrt(sum / data.length);
-          const level = Math.min(100, Math.round(rms * 300));
+
+          const level = Math.min(
+            100,
+            Math.round(rms * 300)
+          );
 
           $("meterFill").style.width = level + "%";
 
@@ -679,7 +775,10 @@
 
             const now = performance.now();
 
-            if (!saving && now - lastPoint >= COOLDOWN_MS) {
+            if (
+              !saving &&
+              now - lastPoint >= COOLDOWN_MS
+            ) {
               lastPoint = now;
               addPoint();
             }
@@ -692,7 +791,8 @@
       }
 
       async function addPoint() {
-        if (saving) return;
+        if (saving || !playerName) return;
+
         saving = true;
 
         try {
@@ -705,11 +805,14 @@
 
           if (error) throw error;
 
-          const nextScore = (Number(data.score) || 0) + 1;
+          const nextScore =
+            (Number(data.score) || 0) + 1;
 
           const { error: updateError } = await db
             .from("players")
-            .update({ score: nextScore })
+            .update({
+              score: nextScore
+            })
             .eq("room", roomName)
             .eq("name", playerName)
             .select("score")
@@ -719,13 +822,19 @@
 
           if (running) {
             $("status").textContent =
-              playerName + ": +1 очко! Всего: " + nextScore;
+              playerName +
+              ": +1 очко! Всего: " +
+              nextScore;
           }
 
           await loadScores();
         } catch (error) {
           console.error(error);
-          showError("Не удалось сохранить очко: " + message(error));
+
+          showError(
+            "Не удалось сохранить очко: " +
+            message(error)
+          );
         } finally {
           saving = false;
         }
@@ -741,13 +850,17 @@
         }
 
         if (stream) {
-          stream.getTracks().forEach(track => track.stop());
+          stream.getTracks().forEach(track => {
+            track.stop();
+          });
+
           stream = null;
         }
 
         if (context) {
           const oldContext = context;
           context = null;
+
           oldContext.close().catch(console.error);
         }
 
@@ -756,21 +869,23 @@
         $("meterFill").style.width = "0%";
         $("start").disabled = false;
         $("stop").disabled = true;
-        $("status").textContent = "Микрофон выключен. Очки сохранены.";
+
+        $("status").textContent =
+          "Микрофон выключен. Очки сохранены.";
       }
 
-      // Проверяем, загружена ли исходная картинка.
+      // Загружаем изображение один раз для проверки.
       const artwork = new Image();
 
       artwork.onerror = () => {
         showError(
           "Не найдена картинка example.jpg. " +
-          "Загрузите присланный образец в корень репозитория " +
-          "под именем example.jpg."
+          "Загрузите исходный образец в корень " +
+          "репозитория под этим именем."
         );
       };
 
-      artwork.src = "example.jpg";
+      artwork.src = "./example.jpg";
 
       window.addEventListener("pagehide", () => {
         stop();
