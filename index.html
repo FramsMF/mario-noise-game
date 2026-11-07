@@ -3,30 +3,295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Шумная вечеринка</title>
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ink: #064967;
+      --track: #9bd8e4;
+    }
+
+    body {
+      margin: 0;
+      background: #fff;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .game {
+      padding: 14px 10px 24px;
+    }
+
+    .arena {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .players {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 36px;
+      width: max-content;
+      min-width: 100%;
+      margin: 0;
+      padding: 0 12px;
+      list-style: none;
+    }
+
+    .player {
+      flex: 0 0 174px;
+      width: 174px;
+      text-align: center;
+    }
+
+    .score {
+      height: 49px;
+      color: var(--ink);
+      font-size: 40px;
+      line-height: 44px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stage {
+      position: relative;
+      height: 377px;
+    }
+
+    .track {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 94px;
+      height: 290px;
+      padding: 7px;
+      transform: translateX(-50%);
+      background: var(--track);
+    }
+
+    .track-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .fill {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 0;
+      background: var(--fill);
+      transition: height 250ms ease;
+    }
+
+    /*
+      Персонажи вырезаются визуально из example.jpg.
+      Расчёт сделан под присланную картинку 470 × 494.
+    */
+
+    .avatar {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 174px;
+      height: 202px;
+      transform: translateX(-50%);
+      background-image: url("example.jpg");
+      background-repeat: no-repeat;
+      background-size: 470px 494px;
+      z-index: 2;
+    }
+
+    .avatar.luigi {
+      background-position: -52px -238px;
+
+      clip-path: polygon(
+        42% 0%, 58% 0%, 75% 8%,
+        90% 25%, 96% 43%, 91% 53%,
+        100% 59%, 98% 68%, 88% 76%,
+        81% 78%, 75% 89%, 63% 98%,
+        45% 100%, 31% 93%, 22% 81%,
+        11% 76%, 3% 65%, 3% 56%,
+        10% 50%, 7% 39%, 14% 23%,
+        27% 8%
+      );
+    }
+
+    .avatar.mario {
+      background-position: -257px -242px;
+
+      clip-path: polygon(
+        42% 4%, 59% 4%, 78% 12%,
+        92% 27%, 97% 44%, 92% 54%,
+        99% 58%, 99% 69%, 89% 77%,
+        81% 80%, 72% 92%, 60% 99%,
+        44% 99%, 30% 92%, 22% 81%,
+        11% 77%, 3% 67%, 3% 57%,
+        9% 52%, 7% 40%, 13% 25%,
+        26% 12%
+      );
+    }
+
+    .name {
+      margin-top: 6px;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 40px;
+      line-height: 48px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty {
+      margin: 80px 0;
+      color: #718795;
+      text-align: center;
+    }
+
+    .panel {
+      width: min(100%, 430px);
+      margin: 24px auto 0;
+      padding: 16px;
+      border: 1px solid #dce8ee;
+      border-radius: 14px;
+      background: #f7fbfd;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      border: 1px solid #c9dce5;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    button {
+      width: 100%;
+      padding: 11px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    #start {
+      background: #279e45;
+    }
+
+    #stop {
+      background: #db4b40;
+    }
+
+    .status {
+      margin: 0 0 12px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .meter {
+      height: 8px;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #dce9ef;
+    }
+
+    .meter-fill {
+      width: 0;
+      height: 100%;
+      background: #39b65a;
+    }
+
+    .hint {
+      margin: 10px 0 0;
+      color: #718795;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .error {
+      margin: 12px 0 0;
+      color: #be3333;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 420px) {
+      .players {
+        justify-content: flex-start;
+        gap: 14px;
+        padding: 0;
+      }
+
+      .fields {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
-
   <main class="game">
+    <section class="arena">
+      <ul id="players" class="players"></ul>
 
-    <section class="arena" aria-label="Очки игроков">
-      <ul id="scoreList" class="scoreboard"></ul>
-      <p id="emptyMessage" class="empty-message">
+      <p id="empty" class="empty">
         Войдите в комнату, чтобы увидеть игроков
       </p>
     </section>
 
     <section class="panel">
-
-      <section class="setup">
+      <div id="setup">
         <div class="fields">
           <label>
-            Имя игрока
+            Имя
             <input
               id="playerName"
-              type="text"
-              placeholder="Например: Маша"
+              placeholder="Маша"
               maxlength="30"
             >
           </label>
@@ -35,53 +300,490 @@
             Комната
             <input
               id="roomName"
-              type="text"
               value="party-1"
               maxlength="50"
             >
           </label>
         </div>
 
-        <button id="joinButton" type="button">
+        <button id="join" type="button">
           Войти в игру
         </button>
-      </section>
+      </div>
 
-      <section id="controls" class="controls hidden">
+      <div id="controls" class="hidden">
         <p id="status" class="status">
-          Нажми «Начать», чтобы включить микрофон
+          Нажмите «Начать»
         </p>
 
         <div class="buttons">
-          <button id="startButton" type="button">
-            Начать
-          </button>
-
-          <button id="stopButton" type="button" disabled>
-            Стоп
-          </button>
+          <button id="start" type="button">Начать</button>
+          <button id="stop" type="button" disabled>Стоп</button>
         </div>
 
-        <div class="microphone">
-          <span>Микрофон</span>
-
-          <div class="meter-track">
-            <div id="meterFill" class="meter-fill"></div>
-          </div>
+        <div class="meter">
+          <div id="meterFill" class="meter-fill"></div>
         </div>
 
         <p class="hint">
           Один громкий всплеск — одно очко
         </p>
-      </section>
+      </div>
 
       <p id="error" class="error hidden" role="alert"></p>
-
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="game.js"></script>
 
+  <script>
+    (() => {
+      "use strict";
+
+      const SUPABASE_URL =
+        "https://juchryyubxkuapnaqelj.supabase.co";
+
+      const SUPABASE_KEY =
+        "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
+
+      const MAX_SCORE = 100;
+      const LOUD_START = 35;
+      const LOUD_END = 25;
+      const COOLDOWN_MS = 1000;
+
+      const $ = id => document.getElementById(id);
+
+      let db;
+      let playerName = "";
+      let roomName = "";
+      let channel = null;
+      let refreshTimer = null;
+
+      let context = null;
+      let stream = null;
+      let analyser = null;
+      let frame = null;
+
+      let running = false;
+      let starting = false;
+      let loud = false;
+      let saving = false;
+      let lastPoint = -Infinity;
+      let loadVersion = 0;
+
+      // Храним DOM-карточки, чтобы заполнение шкал
+      // плавно менялось без пересоздания всей таблицы.
+      const cards = new Map();
+
+      function showError(message) {
+        $("error").textContent = message;
+        $("error").classList.remove("hidden");
+      }
+
+      function clearError() {
+        $("error").textContent = "";
+        $("error").classList.add("hidden");
+      }
+
+      function message(error) {
+        return error?.message || String(error);
+      }
+
+      if (!window.supabase?.createClient) {
+        showError("Не загрузилась библиотека Supabase.");
+        return;
+      }
+
+      try {
+        db = window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_KEY
+        );
+      } catch (error) {
+        showError(message(error));
+        return;
+      }
+
+      $("join").addEventListener("click", joinGame);
+      $("start").addEventListener("click", start);
+      $("stop").addEventListener("click", stop);
+
+      async function joinGame() {
+        if ($("join").disabled) return;
+
+        const name = $("playerName").value.trim();
+        const room = $("roomName").value.trim() || "party-1";
+
+        if (!name) {
+          showError("Введите имя.");
+          return;
+        }
+
+        clearError();
+        $("join").disabled = true;
+        $("join").textContent = "Подключение…";
+
+        try {
+          const { error } = await db
+            .from("players")
+            .upsert(
+              {
+                room,
+                name,
+                score: 0
+              },
+              {
+                onConflict: "room,name",
+                ignoreDuplicates: true
+              }
+            );
+
+          if (error) throw error;
+
+          playerName = name;
+          roomName = room;
+
+          $("setup").classList.add("hidden");
+          $("controls").classList.remove("hidden");
+
+          $("status").textContent =
+            playerName + ", нажмите «Начать»";
+
+          await loadScores();
+
+          channel = db
+            .channel("party-" + crypto.randomUUID())
+            .on(
+              "postgres_changes",
+              {
+                event: "*",
+                schema: "public",
+                table: "players"
+              },
+              loadScores
+            )
+            .subscribe(status => {
+              if (status === "SUBSCRIBED") {
+                loadScores();
+              }
+            });
+
+          refreshTimer = setInterval(loadScores, 5000);
+        } catch (error) {
+          console.error(error);
+          showError("Не удалось войти: " + message(error));
+        } finally {
+          $("join").disabled = false;
+          $("join").textContent = "Войти в игру";
+        }
+      }
+
+      async function loadScores() {
+        if (!roomName) return;
+
+        const version = ++loadVersion;
+
+        try {
+          const { data, error } = await db
+            .from("players")
+            .select("name, score")
+            .eq("room", roomName);
+
+          if (error) throw error;
+          if (version !== loadVersion) return;
+
+          renderScores(data || []);
+        } catch (error) {
+          console.error(error);
+
+          if (version === loadVersion) {
+            showError("Ошибка загрузки очков: " + message(error));
+          }
+        }
+      }
+
+      function createCard(name) {
+        const item = document.createElement("li");
+        item.className = "player";
+
+        const score = document.createElement("div");
+        score.className = "score";
+        score.textContent = "0";
+
+        const stage = document.createElement("div");
+        stage.className = "stage";
+
+        const track = document.createElement("div");
+        track.className = "track";
+
+        const inner = document.createElement("div");
+        inner.className = "track-inner";
+
+        const fill = document.createElement("div");
+        fill.className = "fill";
+
+        inner.append(fill);
+        track.append(inner);
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.setAttribute("aria-hidden", "true");
+
+        stage.append(track, avatar);
+
+        const label = document.createElement("div");
+        label.className = "name";
+        label.textContent = name;
+        label.title = name;
+
+        item.append(score, stage, label);
+
+        return { item, score, fill, avatar };
+      }
+
+      function renderScores(players) {
+        const sorted = [...players].sort((a, b) =>
+          a.name.localeCompare(b.name, "ru")
+        );
+
+        $("empty").classList.toggle("hidden", sorted.length > 0);
+
+        const names = new Set(sorted.map(player => player.name));
+
+        for (const [name, card] of cards) {
+          if (!names.has(name)) {
+            card.item.remove();
+            cards.delete(name);
+          }
+        }
+
+        sorted.forEach((player, index) => {
+          let card = cards.get(player.name);
+
+          if (!card) {
+            card = createCard(player.name);
+            cards.set(player.name, card);
+          }
+
+          const green = index % 2 === 0;
+          const score = Number(player.score) || 0;
+          const percent = Math.max(
+            0,
+            Math.min(100, score / MAX_SCORE * 100)
+          );
+
+          card.item.style.setProperty(
+            "--fill",
+            green ? "#d3f77d" : "#dc9146"
+          );
+
+          card.avatar.className =
+            "avatar " + (green ? "luigi" : "mario");
+
+          card.score.textContent = String(score);
+
+          $("players").append(card.item);
+
+          requestAnimationFrame(() => {
+            card.fill.style.height = percent + "%";
+          });
+        });
+      }
+
+      async function start() {
+        if (running || starting) return;
+
+        clearError();
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+          showError(
+            "Микрофон недоступен. Откройте сайт по HTTPS " +
+            "в отдельной вкладке."
+          );
+          return;
+        }
+
+        starting = true;
+        $("start").disabled = true;
+        $("status").textContent = "Ожидаем разрешение на микрофон…";
+
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: false,
+              autoGainControl: false
+            }
+          });
+
+          const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+
+          context = new AudioContextClass();
+          await context.resume();
+
+          analyser = context.createAnalyser();
+          analyser.fftSize = 1024;
+
+          const source = context.createMediaStreamSource(stream);
+          source.connect(analyser);
+
+          running = true;
+          loud = false;
+          lastPoint = -Infinity;
+
+          $("stop").disabled = false;
+          $("status").textContent = playerName + ": микрофон включён";
+
+          analyse();
+        } catch (error) {
+          console.error(error);
+          stop();
+
+          showError(
+            error.name === "NotAllowedError"
+              ? "Микрофон запрещён. Разрешите его в браузере. " +
+                "В Meleto также требуется разрешение микрофона для iframe."
+              : "Ошибка микрофона: " + message(error)
+          );
+        } finally {
+          starting = false;
+          $("start").disabled = running;
+        }
+      }
+
+      function analyse() {
+        const data = new Uint8Array(analyser.fftSize);
+
+        function tick() {
+          if (!running || !analyser) return;
+
+          analyser.getByteTimeDomainData(data);
+
+          let sum = 0;
+
+          for (const sample of data) {
+            const value = (sample - 128) / 128;
+            sum += value * value;
+          }
+
+          const rms = Math.sqrt(sum / data.length);
+          const level = Math.min(100, Math.round(rms * 300));
+
+          $("meterFill").style.width = level + "%";
+
+          if (level >= LOUD_START) {
+            loud = true;
+          } else if (loud && level < LOUD_END) {
+            loud = false;
+
+            const now = performance.now();
+
+            if (!saving && now - lastPoint >= COOLDOWN_MS) {
+              lastPoint = now;
+              addPoint();
+            }
+          }
+
+          frame = requestAnimationFrame(tick);
+        }
+
+        tick();
+      }
+
+      async function addPoint() {
+        if (saving) return;
+        saving = true;
+
+        try {
+          const { data, error } = await db
+            .from("players")
+            .select("score")
+            .eq("room", roomName)
+            .eq("name", playerName)
+            .single();
+
+          if (error) throw error;
+
+          const nextScore = (Number(data.score) || 0) + 1;
+
+          const { error: updateError } = await db
+            .from("players")
+            .update({ score: nextScore })
+            .eq("room", roomName)
+            .eq("name", playerName)
+            .select("score")
+            .single();
+
+          if (updateError) throw updateError;
+
+          if (running) {
+            $("status").textContent =
+              playerName + ": +1 очко! Всего: " + nextScore;
+          }
+
+          await loadScores();
+        } catch (error) {
+          console.error(error);
+          showError("Не удалось сохранить очко: " + message(error));
+        } finally {
+          saving = false;
+        }
+      }
+
+      function stop() {
+        running = false;
+        loud = false;
+
+        if (frame !== null) {
+          cancelAnimationFrame(frame);
+          frame = null;
+        }
+
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+
+        if (context) {
+          const oldContext = context;
+          context = null;
+          oldContext.close().catch(console.error);
+        }
+
+        analyser = null;
+
+        $("meterFill").style.width = "0%";
+        $("start").disabled = false;
+        $("stop").disabled = true;
+        $("status").textContent = "Микрофон выключен. Очки сохранены.";
+      }
+
+      // Проверяем, загружена ли исходная картинка.
+      const artwork = new Image();
+
+      artwork.onerror = () => {
+        showError(
+          "Не найдена картинка example.jpg. " +
+          "Загрузите присланный образец в корень репозитория " +
+          "под именем example.jpg."
+        );
+      };
+
+      artwork.src = "example.jpg";
+
+      window.addEventListener("pagehide", () => {
+        stop();
+
+        if (refreshTimer) {
+          clearInterval(refreshTimer);
+        }
+
+        if (channel) {
+          db.removeChannel(channel);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
