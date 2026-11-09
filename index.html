@@ -1339,111 +1339,117 @@
   }
 
   async function init() {
-    busy = true;
-    updateControls();
+  busy = true;
+  updateControls();
+
+  try {
+    if (!window.supabase?.createClient) {
+      throw new Error(
+        "Не загрузилась библиотека Supabase. " +
+        "Проверьте интернет или блокировку CDN."
+      );
+    }
+
+    db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    // Клиент создан: уже можно входить и играть.
+    ready = true;
+
+    const testKey = STORAGE_KEY + "-test";
+
+    sessionStorage.setItem(testKey, "1");
+    sessionStorage.removeItem(testKey);
+
+    let previous = null;
 
     try {
-      if (!window.supabase?.createClient) {
-        throw new Error(
-          "Не загрузилась библиотека Supabase."
-        );
-      }
-
-      db = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
+      previous = JSON.parse(
+        sessionStorage.getItem(STORAGE_KEY) || "null"
       );
+    } catch {
+      previous = null;
+    }
 
-      const testKey = STORAGE_KEY + "-test";
+    selectedAvatar =
+      normalizeAvatar(previous?.avatar);
 
-      sessionStorage.setItem(testKey, "1");
-      sessionStorage.removeItem(testKey);
+    if (
+      previous?.mode === "watch" &&
+      typeof previous.room === "string" &&
+      previous.room.trim()
+    ) {
+      mode = "watch";
+      activeRoom = previous.room;
 
-      let previous = null;
+      $("room").value = activeRoom;
 
-      try {
-        previous = JSON.parse(
-          sessionStorage.getItem(STORAGE_KEY) || "null"
-        );
-      } catch {
-        previous = null;
-      }
-
-      selectedAvatar =
-        normalizeAvatar(previous?.avatar);
-
-      if (
-        previous?.mode === "watch" &&
-        typeof previous.room === "string" &&
-        previous.room.trim()
-      ) {
-        mode = "watch";
-        activeRoom = previous.room;
-
-        $("room").value = activeRoom;
-
-        await loadScores();
-        subscribe();
-
-        $("status").textContent =
-          "Табло комнаты «" + activeRoom +
-          "». Микрофон выключен.";
-      } else if (
-        previous &&
-        typeof previous.name === "string" &&
-        previous.name.trim() &&
-        typeof previous.room === "string" &&
-        previous.room.trim()
-      ) {
-        mode = "player";
-
-        identity = {
-          name: previous.name,
-          room: previous.room
-        };
-
-        activeRoom = identity.room;
-
-        $("name").value = identity.name;
-        $("room").value = identity.room;
-
-        const { error } = await db
-          .from("players")
-          .update({
-            score: 0,
-            is_loud: false
-          })
-          .eq("room", identity.room)
-          .eq("name", identity.name);
-
-        if (error) throw error;
-
-        await loadScores();
-        subscribe();
-
-        $("status").textContent =
-          "Ваши очки сброшены. " +
-          "Выберите аватар и нажмите «Начать».";
-      } else {
-        $("status").textContent =
-          "Введите имя и нажмите «Присоединиться». " +
-          "После этого станут доступны стикеры.";
-      }
-
-      ready = true;
-    } catch (error) {
-      ready = false;
-      showError(error);
+      loadScores().catch(showError);
+      subscribe();
 
       $("status").textContent =
-        "Не удалось подготовить игру. " +
-        "Проверьте ошибку ниже.";
-    } finally {
-      busy = false;
-      updateControls();
-    }
-  }
+        "Табло комнаты «" + activeRoom +
+        "». Микрофон выключен.";
+    } else if (
+      previous &&
+      typeof previous.name === "string" &&
+      previous.name.trim() &&
+      typeof previous.room === "string" &&
+      previous.room.trim()
+    ) {
+      mode = "player";
 
+      identity = {
+        name: previous.name,
+        room: previous.room
+      };
+
+      activeRoom = identity.room;
+
+      $("name").value = identity.name;
+      $("room").value = identity.room;
+
+      // Не ждём этот запрос: интерфейс должен открыться сразу.
+      db.from("players")
+        .update({
+          score: 0,
+          is_loud: false
+        })
+        .eq("room", identity.room)
+        .eq("name", identity.name)
+        .then(
+          result => {
+            if (result.error) {
+              showError(result.error);
+            }
+          }
+        );
+
+      loadScores().catch(showError);
+      subscribe();
+
+      $("status").textContent =
+        "Вы вошли как «" + identity.name +
+        "». Выберите аватар и нажмите «Начать».";
+    } else {
+      $("status").textContent =
+        "Введите имя и нажмите «Присоединиться». " +
+        "После этого станут доступны стикеры.";
+    }
+  } catch (error) {
+    ready = false;
+    showError(error);
+
+    $("status").textContent =
+      "Не удалось подключиться. " +
+      "Проверьте ошибку ниже.";
+  } finally {
+    busy = false;
+    updateControls();
+  }
+}
   async function join() {
     if (
       !ready ||
