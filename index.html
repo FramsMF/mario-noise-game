@@ -314,6 +314,10 @@
     background: #dc4b43;
   }
 
+  #join {
+    background: #2f7fc4;
+  }
+
   #watch {
     display: block;
     width: 100%;
@@ -701,6 +705,10 @@
     </div>
 
     <div id="playerActions" class="actions">
+      <button id="join" class="action" type="button" disabled>
+        Присоединиться
+      </button>
+
       <button id="start" class="action" type="button" disabled>
         Начать
       </button>
@@ -735,6 +743,7 @@
   type="button"
   aria-controls="stickerPanel"
   aria-expanded="false"
+  disabled
 >
   Стикеры
 </button>
@@ -847,13 +856,6 @@
       talkingImage: "./Yoshi.png"
     }
   };
-
-  const STICKERS = [
-    { name: "Стикер 1", image: "./1.png" },
-    { name: "Стикер 2", image: "./2.png" },
-    { name: "Стикер 3", image: "./3.png" },
-    { name: "Стикер 4", image: "./4.png" }
-  ];
 
   const $ = id => document.getElementById(id);
 
@@ -978,7 +980,7 @@
 
         $("status").textContent =
           "Выбран персонаж: " + avatar.label +
-          ". Нажмите «Начать», чтобы применить.";
+          ". Нажмите «Присоединиться».";
       });
 
       $("choices").append(button);
@@ -987,11 +989,22 @@
 
   function updateControls() {
     const watching = mode === "watch";
+    const loggedIn = Boolean(identity);
 
     $("nameField").hidden = watching;
     $("avatarSection").hidden = watching;
     $("playerActions").hidden = watching;
     $("meterSection").hidden = watching;
+
+    $("join").disabled =
+      !ready ||
+      busy ||
+      running ||
+      saving ||
+      publishingLoud ||
+      watching ||
+      loggedIn ||
+      !$("name").value.trim();
 
     $("start").disabled =
       !ready ||
@@ -999,7 +1012,8 @@
       running ||
       saving ||
       publishingLoud ||
-      watching;
+      watching ||
+      !loggedIn;
 
     $("stop").disabled = !running;
 
@@ -1018,13 +1032,13 @@
       !ready ||
       busy ||
       running ||
-      Boolean(identity);
+      loggedIn;
 
     $("room").disabled =
       !ready ||
       busy ||
       running ||
-      Boolean(identity) ||
+      loggedIn ||
       watching;
 
     document.querySelectorAll(".choice").forEach(button => {
@@ -1038,21 +1052,27 @@
         busy ||
         running ||
         saving ||
-        watching;
+        watching ||
+        loggedIn;
     });
 
     $("hint").textContent = watching
       ? "Общее табло: микрофон выключен. " +
         "Обновление страницы не сбрасывает результаты."
-      : "Один громкий всплеск — одно очко. " +
-        "Обновление страницы в режиме игрока " +
-        "обнуляет его результат.";
+      : loggedIn
+        ? "Один громкий всплеск — одно очко. " +
+          "Обновление страницы в режиме игрока " +
+          "обнуляет его результат."
+        : "Введите имя и нажмите «Присоединиться». " +
+          "После этого станут доступны стикеры.";
 
     $("roomTitle").hidden = !activeRoom;
 
     $("roomTitle").textContent = activeRoom
       ? "Комната: " + activeRoom
       : "";
+
+    updateStickerAccess();
   }
 
   function clearCards() {
@@ -1406,8 +1426,8 @@
           "Выберите аватар и нажмите «Начать».";
       } else {
         $("status").textContent =
-          "Выберите аватар для игры " +
-          "или откройте табло комнаты.";
+          "Введите имя и нажмите «Присоединиться». " +
+          "После этого станут доступны стикеры.";
       }
 
       ready = true;
@@ -1418,6 +1438,70 @@
       $("status").textContent =
         "Не удалось подготовить игру. " +
         "Проверьте ошибку ниже.";
+    } finally {
+      busy = false;
+      updateControls();
+    }
+  }
+
+  async function join() {
+    if (
+      !ready ||
+      busy ||
+      running ||
+      saving ||
+      publishingLoud ||
+      mode === "watch" ||
+      identity
+    ) {
+      return;
+    }
+
+    const name = $("name").value.trim();
+    const room =
+      $("room").value.trim() || "party-1";
+
+    if (!name) {
+      showError(new Error("Введите имя игрока."));
+      return;
+    }
+
+    busy = true;
+    clearError();
+    updateControls();
+
+    try {
+      const { error } = await db
+        .from("players")
+        .upsert(
+          {
+            room,
+            name,
+            avatar: selectedAvatar,
+            score: 0,
+            is_loud: false
+          },
+          {
+            onConflict: "room,name"
+          }
+        );
+
+      if (error) throw error;
+
+      identity = { name, room };
+      activeRoom = room;
+      mode = "player";
+
+      saveSession();
+
+      await loadScores();
+      subscribe();
+
+      $("status").textContent =
+        name + " присоединился к комнате «" +
+        room + "». Теперь доступны стикеры.";
+    } catch (error) {
+      showError(error);
     } finally {
       busy = false;
       updateControls();
@@ -1452,7 +1536,7 @@
 
         $("status").textContent =
           "Введите имя, выберите аватар " +
-          "и нажмите «Начать».";
+          "и нажмите «Присоединиться».";
       } else {
         if (identity) {
           const { error } = await db
@@ -1506,31 +1590,9 @@
       running ||
       saving ||
       publishingLoud ||
-      mode === "watch"
+      mode === "watch" ||
+      !identity
     ) {
-      return;
-    }
-
-    const name =
-      identity?.name || $("name").value.trim();
-
-    const room =
-      identity?.room ||
-      $("room").value.trim() ||
-      "party-1";
-
-    if (!name) {
-      showError(new Error("Введите имя игрока."));
-      return;
-    }
-
-    if (!navigator.mediaDevices?.getUserMedia) {
-      showError(
-        new Error(
-          "Микрофон недоступен. " +
-          "Откройте игру по HTTPS в отдельной вкладке."
-        )
-      );
       return;
     }
 
@@ -1572,41 +1634,28 @@
 
       source.connect(analyser);
 
-      let score = 0;
-
-      if (identity) {
-        const { data, error } = await db
-          .from("players")
-          .select("score")
-          .eq("room", identity.room)
-          .eq("name", identity.name)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        score = Number(data?.score) || 0;
-      }
-
-      const { error } = await db
+      const { data, error } = await db
         .from("players")
-        .upsert(
-          {
-            room,
-            name,
-            avatar: selectedAvatar,
-            score,
-            is_loud: false
-          },
-          {
-            onConflict: "room,name"
-          }
-        );
+        .select("score")
+        .eq("room", identity.room)
+        .eq("name", identity.name)
+        .maybeSingle();
 
       if (error) throw error;
 
-      identity = { name, room };
-      activeRoom = room;
-      mode = "player";
+      const score =
+        Number(data?.score) || 0;
+
+      const { error: updateError } = await db
+        .from("players")
+        .update({
+          avatar: selectedAvatar,
+          is_loud: false
+        })
+        .eq("room", identity.room)
+        .eq("name", identity.name);
+
+      if (updateError) throw updateError;
 
       saveSession();
 
@@ -1622,7 +1671,7 @@
       publishedLoud = false;
 
       $("status").textContent =
-        name + ": микрофон включён";
+        identity.name + ": микрофон включён";
 
       await loadScores();
 
@@ -1945,9 +1994,14 @@
     });
   }
 
+  $("join").addEventListener("click", join);
   $("start").addEventListener("click", start);
   $("stop").addEventListener("click", stop);
   $("watch").addEventListener("click", toggleWatch);
+
+  $("name").addEventListener("input", () => {
+    updateControls();
+  });
 
   window.addEventListener("pagehide", () => {
     stop();
@@ -1963,7 +2017,7 @@
   init();
 })();
 
-/* Личные стикеры: не связаны с Supabase */
+/* Личные стикеры: только после входа, сохраняются локально */
 (() => {
   "use strict";
 
@@ -1987,6 +2041,36 @@
 
   let selectedSticker = null;
   let nextZIndex = 1;
+
+  function storageKey() {
+    const session = sessionStorage.getItem(
+      "noise-party-player-v2"
+    );
+
+    if (!session) return null;
+
+    let data;
+
+    try {
+      data = JSON.parse(session);
+    } catch {
+      return null;
+    }
+
+    if (
+      !data?.name?.trim() ||
+      !data?.room?.trim()
+    ) {
+      return null;
+    }
+
+    return (
+      "sticker-party-" +
+      data.room.trim() +
+      "-" +
+      data.name.trim()
+    );
+  }
 
   function setPanelOpen(open) {
     panel.classList.toggle("is-open", open);
@@ -2040,21 +2124,99 @@
 
     element.style.left = position.left + "px";
     element.style.top = position.top + "px";
+
+    saveStickers();
   }
 
-  function selectPlacedSticker(element) {
-    layer.querySelectorAll(".placed-sticker").forEach(item => {
-      item.classList.toggle(
-        "is-selected",
-        item === element
+  function saveStickers() {
+    const key = storageKey();
+
+    if (!key) return;
+
+    const stickers = [];
+
+    layer.querySelectorAll(".placed-sticker").forEach(
+      element => {
+        stickers.push({
+          image: element.dataset.image,
+          left: parseFloat(element.style.left) || 0,
+          top: parseFloat(element.style.top) || 0
+        });
+      }
+    );
+
+    try {
+      localStorage.setItem(
+        key,
+        JSON.stringify(stickers)
+      );
+    } catch (error) {
+      console.error(
+        "Не удалось сохранить стикеры:",
+        error
+      );
+    }
+  }
+
+  function loadStickers() {
+    layer.replaceChildren();
+    nextZIndex = 1;
+
+    const key = storageKey();
+
+    if (!key) return;
+
+    let saved = [];
+
+    try {
+      saved = JSON.parse(
+        localStorage.getItem(key) || "[]"
+      );
+    } catch {
+      saved = [];
+    }
+
+    if (!Array.isArray(saved)) {
+      saved = [];
+    }
+
+    saved.forEach(item => {
+      const sticker = STICKERS.find(
+        option => option.image === item.image
+      );
+
+      if (!sticker) return;
+
+      createSticker(
+        sticker,
+        (Number(item.left) || 0) + SIZE / 2,
+        (Number(item.top) || 0) + SIZE / 2,
+        false
       );
     });
   }
 
-  function createSticker(sticker, x, y) {
+  function selectPlacedSticker(element) {
+    layer.querySelectorAll(".placed-sticker").forEach(
+      item => {
+        item.classList.toggle(
+          "is-selected",
+          item === element
+        );
+      }
+    );
+  }
+
+  function createSticker(
+    sticker,
+    x,
+    y,
+    shouldSave = true
+  ) {
     const element = document.createElement("div");
 
     element.className = "placed-sticker";
+    element.dataset.image = sticker.image;
     element.style.zIndex = String(nextZIndex++);
 
     const image = document.createElement("img");
@@ -2078,6 +2240,7 @@
     remove.addEventListener("click", event => {
       event.stopPropagation();
       element.remove();
+      saveStickers();
     });
 
     element.append(image, remove);
@@ -2088,6 +2251,10 @@
       x - SIZE / 2,
       y - SIZE / 2
     );
+
+    if (shouldSave) {
+      saveStickers();
+    }
 
     selectPlacedSticker(element);
 
@@ -2161,6 +2328,17 @@
     });
   }
 
+  function updateStickerAccess() {
+    const allowed = Boolean(storageKey());
+
+    toggle.disabled = !allowed;
+
+    if (!allowed) {
+      setPanelOpen(false);
+      cancelPlacement();
+    }
+  }
+
   for (let index = 0; index < 8; index++) {
     const sticker = STICKERS[index];
 
@@ -2211,6 +2389,8 @@
   }
 
   toggle.addEventListener("click", () => {
+    if (!storageKey()) return;
+
     setPanelOpen(
       !panel.classList.contains("is-open")
     );
@@ -2248,8 +2428,14 @@
   });
 
   clear.addEventListener("click", () => {
+    const key = storageKey();
+
     layer.replaceChildren();
     nextZIndex = 1;
+
+    if (key) {
+      localStorage.removeItem(key);
+    }
   });
 
   document.addEventListener("keydown", event => {
@@ -2282,6 +2468,14 @@
       }
     );
   });
+
+  window.addEventListener("storage", event => {
+    if (event.key === storageKey()) {
+      loadStickers();
+    }
+  });
+
+  loadStickers();
 })();
 </script>
 </body>
