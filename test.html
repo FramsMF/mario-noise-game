@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Проверка Supabase</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #064967;
+  }
+
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    padding: 12px;
+    border: 1px solid #ccc;
+    background: #f7f7f7;
+  }
+</style>
+</head>
+
+<body>
+<h1>Проверка подключения</h1>
+
+<pre id="result">Проверяем…</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+(() => {
+  const output = document.getElementById("result");
+  const lines = [];
+
+  lines.push("1. Библиотека Supabase: " +
+    (window.supabase ? "загружена" : "НЕ загружена"));
+
+  const url =
+    "https://juchryyubxkuapnaqelj.supabase.co/rest/v1/players?select=id&limit=1";
+
+  const key =
+    "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
+
+  lines.push("2. Пробуем прочитать таблицу players…");
+
+  fetch(url, {
+    headers: {
+      apikey: key,
+      Authorization: "Bearer " + key
+    }
+  })
+    .then(response => {
+      lines.push(
+        "3. Ответ сервера: " + response.status +
+        " " + response.statusText
+      );
+
+      return response.text();
+    })
+    .then(text => {
+      lines.push("4. Ответ: " + text);
+      output.textContent = lines.join("\n\n");
+    })
+    .catch(error => {
+      lines.push(
+        "3. ОШИБКА запроса: " +
+        (error?.message || String(error))
+      );
+
+      output.textContent = lines.join("\n\n");
+    });
+})();
+</script>
+
+</body>
+</html>
