@@ -1072,7 +1072,7 @@
       ? "Комната: " + activeRoom
       : "";
 
-    updateStickerAccess();
+    window.updateStickerAccess?.();
   }
 
   function clearCards() {
@@ -2333,7 +2333,8 @@
       element.classList.remove("is-dragging");
     });
   }
-
+ 
+  window.updateStickerAccess = null;
   function updateStickerAccess() {
     const allowed = Boolean(storageKey());
 
@@ -2344,7 +2345,7 @@
       cancelPlacement();
     }
   }
-
+  window.updateStickerAccess = updateStickerAccess;
   for (let index = 0; index < 8; index++) {
     const sticker = STICKERS[index];
 
