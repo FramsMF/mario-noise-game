@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Mario Party</title>
+<title>Шумная вечеринка</title>
 
 <style>
   * {
@@ -374,12 +374,262 @@
     display: none !important;
   }
 
+  /* Личные стикеры */
+
+  .sticker-toggle {
+    position: fixed;
+    right: 14px;
+    bottom: 20px;
+    z-index: 1200;
+
+    padding: 12px 18px;
+
+    border: 0;
+    border-radius: 14px;
+
+    background: var(--ink);
+    color: #fff;
+
+    font-weight: 700;
+    cursor: pointer;
+
+    box-shadow: 0 4px 18px rgba(6, 73, 103, 0.18);
+  }
+
+  .sticker-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1300;
+
+    width: min(300px, 90vw);
+    padding: 20px 16px;
+
+    overflow-y: auto;
+
+    border-left: 1px solid #dce8ee;
+    background: #f5fafc;
+    box-shadow: -8px 0 30px rgba(6, 73, 103, 0.12);
+
+    transform: translateX(110%);
+    visibility: hidden;
+
+    transition:
+      transform 250ms ease,
+      visibility 250ms;
+  }
+
+  .sticker-panel.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .sticker-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .sticker-panel-title {
+    margin: 0;
+    font-size: 21px;
+  }
+
+  .sticker-close {
+    width: 36px;
+    height: 36px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #e2edf2;
+    color: var(--ink);
+
+    font-size: 25px;
+    cursor: pointer;
+  }
+
+  .sticker-description {
+    margin: 0 0 16px;
+    color: #718795;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(4, 110px);
+    gap: 10px;
+  }
+
+  .sticker-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+    padding: 10px;
+
+    border: 1px solid #dce8ee;
+    border-radius: 14px;
+
+    background: #fff;
+  }
+
+  button.sticker-cell {
+    cursor: pointer;
+  }
+
+  button.sticker-cell:hover {
+    border-color: var(--ink);
+    background: #e7f5fc;
+  }
+
+  .sticker-cell img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .sticker-cell-empty {
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .sticker-clear {
+    width: 100%;
+    margin-top: 16px;
+    padding: 11px;
+
+    border: 1px solid #c8dce6;
+    border-radius: 10px;
+
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .sticker-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+
+    pointer-events: none;
+  }
+
+  .placed-sticker {
+    position: absolute;
+
+    width: 88px;
+    height: 88px;
+
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+  }
+
+  .placed-sticker.is-dragging {
+    cursor: grabbing;
+  }
+
+  .placed-sticker > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .sticker-remove {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 23px;
+    height: 23px;
+    padding: 0;
+
+    border: 1px solid #dce8ee;
+    border-radius: 50%;
+
+    background: #fff;
+    color: #bd3030;
+
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .placed-sticker:hover .sticker-remove,
+  .placed-sticker:focus-within .sticker-remove,
+  .placed-sticker.is-selected .sticker-remove {
+    display: flex;
+  }
+
+  .sticker-placement {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .sticker-placement-hint {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+
+    width: max-content;
+    max-width: calc(100% - 24px);
+    padding: 12px 16px;
+
+    transform: translateX(-50%);
+
+    border: 1px solid #c8dce6;
+    border-radius: 12px;
+
+    background: #fff;
+    color: var(--ink);
+
+    text-align: center;
+    font-size: 14px;
+
+    box-shadow: 0 4px 20px rgba(6, 73, 103, 0.12);
+  }
+
+  .sticker-cancel {
+    margin-left: 8px;
+    padding: 5px 8px;
+
+    border: 0;
+    border-radius: 6px;
+
+    background: #e2edf2;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .avatar.is-speaking {
       animation: none;
     }
 
-    .fill {
+    .fill,
+    .sticker-panel {
       transition: none;
     }
   }
@@ -476,6 +726,76 @@
   </section>
 </main>
 
+<!-- Личные стикеры: не связаны с Supabase -->
+<div id="stickerLayer" class="sticker-layer"></div>
+
+<button
+  id="stickerToggle"
+  class="sticker-toggle"
+  type="button"
+  aria-controls="stickerPanel"
+  aria-expanded="false"
+>
+  Стикеры
+</button>
+
+<aside
+  id="stickerPanel"
+  class="sticker-panel"
+  aria-labelledby="stickerPanelTitle"
+  aria-hidden="true"
+  inert
+>
+  <div class="sticker-panel-header">
+    <h2 id="stickerPanelTitle" class="sticker-panel-title">
+      Стикеры
+    </h2>
+
+    <button
+      id="stickerClose"
+      class="sticker-close"
+      type="button"
+      aria-label="Закрыть панель стикеров"
+    >
+      ×
+    </button>
+  </div>
+
+  <p class="sticker-description">
+    Выберите стикер, затем нажмите на свободное место
+    страницы. Размещённый стикер можно перетаскивать.
+    Его видите только вы.
+  </p>
+
+  <div id="stickerGrid" class="sticker-grid"></div>
+
+  <button
+    id="stickerClear"
+    class="sticker-clear"
+    type="button"
+  >
+    Убрать все мои стикеры
+  </button>
+</aside>
+
+<div
+  id="stickerPlacement"
+  class="sticker-placement"
+  hidden
+>
+  <div class="sticker-placement-hint">
+    Нажмите, куда поставить стикер
+
+    <button
+      id="stickerCancel"
+      class="sticker-cancel"
+      type="button"
+    >
+      Отмена
+    </button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -523,10 +843,17 @@
     yoshi: {
       label: "Йоши",
       color: "#79d8a0",
-      image: "./Yoshi2.png",
+      image: "./yoshi2.png",
       talkingImage: "./Yoshi.png"
     }
   };
+
+  const STICKERS = [
+    { name: "Стикер 1", image: "./1.png" },
+    { name: "Стикер 2", image: "./2.png" },
+    { name: "Стикер 3", image: "./3.png" },
+    { name: "Стикер 4", image: "./4.png" }
+  ];
 
   const $ = id => document.getElementById(id);
 
@@ -1634,6 +1961,327 @@
 
   renderChoices();
   init();
+})();
+
+/* Личные стикеры: не связаны с Supabase */
+(() => {
+  "use strict";
+
+  const STICKERS = [
+    { name: "Стикер 1", image: "./1.png" },
+    { name: "Стикер 2", image: "./2.png" },
+    { name: "Стикер 3", image: "./3.png" },
+    { name: "Стикер 4", image: "./4.png" }
+  ];
+
+  const SIZE = 88;
+
+  const layer = document.getElementById("stickerLayer");
+  const panel = document.getElementById("stickerPanel");
+  const toggle = document.getElementById("stickerToggle");
+  const close = document.getElementById("stickerClose");
+  const grid = document.getElementById("stickerGrid");
+  const clear = document.getElementById("stickerClear");
+  const placement = document.getElementById("stickerPlacement");
+  const cancel = document.getElementById("stickerCancel");
+
+  let selectedSticker = null;
+  let nextZIndex = 1;
+
+  function setPanelOpen(open) {
+    panel.classList.toggle("is-open", open);
+    panel.setAttribute("aria-hidden", String(!open));
+    panel.inert = !open;
+
+    toggle.setAttribute("aria-expanded", String(open));
+
+    if (open) {
+      close.focus();
+    } else if (panel.contains(document.activeElement)) {
+      toggle.focus();
+    }
+  }
+
+  function cancelPlacement() {
+    selectedSticker = null;
+    placement.hidden = true;
+  }
+
+  function startPlacement(sticker) {
+    selectedSticker = sticker;
+
+    setPanelOpen(false);
+    placement.hidden = false;
+    cancel.focus();
+  }
+
+  function limitPosition(left, top) {
+    return {
+      left: Math.max(
+        0,
+        Math.min(
+          left,
+          Math.max(0, window.innerWidth - SIZE)
+        )
+      ),
+
+      top: Math.max(
+        0,
+        Math.min(
+          top,
+          Math.max(0, window.innerHeight - SIZE)
+        )
+      )
+    };
+  }
+
+  function moveSticker(element, left, top) {
+    const position = limitPosition(left, top);
+
+    element.style.left = position.left + "px";
+    element.style.top = position.top + "px";
+  }
+
+  function selectPlacedSticker(element) {
+    layer.querySelectorAll(".placed-sticker").forEach(item => {
+      item.classList.toggle(
+        "is-selected",
+        item === element
+      );
+    });
+  }
+
+  function createSticker(sticker, x, y) {
+    const element = document.createElement("div");
+
+    element.className = "placed-sticker";
+    element.style.zIndex = String(nextZIndex++);
+
+    const image = document.createElement("img");
+    image.src = sticker.image;
+    image.alt = sticker.name;
+    image.draggable = false;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "sticker-remove";
+    remove.textContent = "×";
+    remove.setAttribute(
+      "aria-label",
+      "Удалить: " + sticker.name
+    );
+
+    remove.addEventListener("pointerdown", event => {
+      event.stopPropagation();
+    });
+
+    remove.addEventListener("click", event => {
+      event.stopPropagation();
+      element.remove();
+    });
+
+    element.append(image, remove);
+    layer.append(element);
+
+    moveSticker(
+      element,
+      x - SIZE / 2,
+      y - SIZE / 2
+    );
+
+    selectPlacedSticker(element);
+
+    let drag = null;
+
+    element.addEventListener("pointerdown", event => {
+      if (event.target.closest("button")) return;
+      if (!event.isPrimary || event.button !== 0) return;
+
+      event.preventDefault();
+
+      const rect =
+        element.getBoundingClientRect();
+
+      drag = {
+        pointerId: event.pointerId,
+        offsetX: event.clientX - rect.left,
+        offsetY: event.clientY - rect.top
+      };
+
+      element.style.zIndex =
+        String(nextZIndex++);
+
+      element.classList.add("is-dragging");
+
+      selectPlacedSticker(element);
+      element.setPointerCapture(event.pointerId);
+    });
+
+    element.addEventListener("pointermove", event => {
+      if (
+        !drag ||
+        drag.pointerId !== event.pointerId
+      ) {
+        return;
+      }
+
+      moveSticker(
+        element,
+        event.clientX - drag.offsetX,
+        event.clientY - drag.offsetY
+      );
+    });
+
+    function finishDrag(event) {
+      if (
+        !drag ||
+        drag.pointerId !== event.pointerId
+      ) {
+        return;
+      }
+
+      drag = null;
+      element.classList.remove("is-dragging");
+
+      if (
+        element.hasPointerCapture(event.pointerId)
+      ) {
+        element.releasePointerCapture(
+          event.pointerId
+        );
+      }
+    }
+
+    element.addEventListener("pointerup", finishDrag);
+    element.addEventListener("pointercancel", finishDrag);
+
+    element.addEventListener("lostpointercapture", () => {
+      drag = null;
+      element.classList.remove("is-dragging");
+    });
+  }
+
+  for (let index = 0; index < 8; index++) {
+    const sticker = STICKERS[index];
+
+    if (!sticker) {
+      const empty = document.createElement("div");
+
+      empty.className =
+        "sticker-cell sticker-cell-empty";
+      empty.setAttribute("aria-hidden", "true");
+
+      grid.append(empty);
+      continue;
+    }
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sticker-cell";
+    button.setAttribute(
+      "aria-label",
+      "Выбрать: " + sticker.name
+    );
+
+    const image = document.createElement("img");
+    image.src = sticker.image;
+    image.alt = sticker.name;
+    image.draggable = false;
+
+    image.addEventListener("error", () => {
+      image.hidden = true;
+
+      button.append(
+        document.createTextNode(
+          "Не найден файл " +
+          sticker.image.replace("./", "")
+        )
+      );
+
+      button.disabled = true;
+    });
+
+    button.append(image);
+
+    button.addEventListener("click", () => {
+      startPlacement(sticker);
+    });
+
+    grid.append(button);
+  }
+
+  toggle.addEventListener("click", () => {
+    setPanelOpen(
+      !panel.classList.contains("is-open")
+    );
+  });
+
+  close.addEventListener("click", () => {
+    setPanelOpen(false);
+  });
+
+  cancel.addEventListener("click", event => {
+    event.stopPropagation();
+    cancelPlacement();
+    toggle.focus();
+  });
+
+  placement.addEventListener("click", event => {
+    if (
+      event.target.closest(
+        ".sticker-placement-hint"
+      )
+    ) {
+      return;
+    }
+
+    if (!selectedSticker) return;
+
+    createSticker(
+      selectedSticker,
+      event.clientX,
+      event.clientY
+    );
+
+    cancelPlacement();
+    toggle.focus();
+  });
+
+  clear.addEventListener("click", () => {
+    layer.replaceChildren();
+    nextZIndex = 1;
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+
+    cancelPlacement();
+    setPanelOpen(false);
+  });
+
+  document.addEventListener("pointerdown", event => {
+    if (event.target.closest(".placed-sticker")) {
+      return;
+    }
+
+    layer.querySelectorAll(".is-selected").forEach(
+      element => {
+        element.classList.remove("is-selected");
+      }
+    );
+  });
+
+  window.addEventListener("resize", () => {
+    layer.querySelectorAll(".placed-sticker").forEach(
+      element => {
+        moveSticker(
+          element,
+          parseFloat(element.style.left) || 0,
+          parseFloat(element.style.top) || 0
+        );
+      }
+    );
+  });
 })();
 </script>
 </body>
