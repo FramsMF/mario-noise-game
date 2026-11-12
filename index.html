@@ -7,694 +7,619 @@
 <title>Mario Party</title>
 
 <style>
-  * {
-    box-sizing: border-box;
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --ink: #064967;
+  --track: #9bd8e4;
+}
+
+body {
+  margin: 0;
+  background: #fff;
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.game {
+  padding: 16px 12px 95px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  max-width: 450px;
+  margin: 0 auto 18px;
+  padding: 8px 0;
+  background: #fff;
+}
+
+.action {
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #279e45;
+  color: #fff;
+  font-weight: 700;
+}
+
+#watch {
+  width: 100%;
+  background: var(--ink);
+}
+
+#join {
+  background: #2f7fc4;
+}
+
+#stop {
+  background: #dc4b43;
+}
+
+#logout {
+  background: #718795;
+}
+
+.room-title,
+.empty,
+.status,
+.hint {
+  text-align: center;
+}
+
+.room-title {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.empty {
+  padding: 40px 10px;
+  color: #718795;
+}
+
+.arena {
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+
+.players {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 35px;
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  padding: 0 10px;
+  list-style: none;
+}
+
+.player {
+  flex: 0 0 174px;
+  width: 174px;
+  text-align: center;
+}
+
+.score {
+  height: 48px;
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-caption {
+  margin: 0 0 7px;
+  color: #718795;
+  font-size: 12px;
+}
+
+.stage {
+  position: relative;
+  height: 360px;
+}
+
+.track {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 94px;
+  height: 280px;
+  padding: 7px;
+  transform: translateX(-50%);
+  background: var(--track);
+}
+
+.track-inner {
+  position: relative;
+  height: 100%;
+}
+
+.fill {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0;
+  background: var(--color);
+  transition: height .25s ease;
+}
+
+.avatar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 174px;
+  height: 202px;
+  transform-origin: center bottom;
+}
+
+.avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.avatar.is-speaking {
+  animation: speaking .65s ease-in-out infinite;
+}
+
+@keyframes speaking {
+  0%, 100% {
+    transform: translateY(0) rotate(0);
   }
 
-  :root {
-    --ink: #064967;
-    --track: #9bd8e4;
+  35% {
+    transform: translateY(-2px) rotate(-.5deg);
   }
 
-  body {
-    margin: 0;
-    background: #fff;
-    color: var(--ink);
-    font-family: Arial, Helvetica, sans-serif;
+  70% {
+    transform: translateY(-1px) rotate(.5deg);
+  }
+}
+
+.name {
+  margin-top: 7px;
+  overflow: hidden;
+  font-size: 32px;
+  line-height: 42px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel {
+  width: min(100%, 450px);
+  margin: 24px auto 0;
+  padding: 18px;
+  border: 1px solid #dce8ee;
+  border-radius: 16px;
+  background: #f5fafc;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+label,
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 11px;
+  border: 1px solid #c8dce6;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+}
+
+input:focus {
+  outline: 2px solid #9bd8e4;
+}
+
+.label {
+  margin: 18px 0 8px;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.choice {
+  padding: 7px 4px;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.choice[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: #e7f5fc;
+}
+
+.choice img {
+  display: block;
+  width: 100%;
+  height: 85px;
+  object-fit: contain;
+}
+
+.choice span {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.actions button {
+  flex: 1;
+}
+
+.status {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hint {
+  color: #718795;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.error {
+  color: #bd3030;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.meter {
+  height: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #dce8ee;
+}
+
+.meter-fill {
+  width: 0;
+  height: 100%;
+  background: #38b65a;
+}
+
+.sticker-toggle {
+  position: fixed;
+  right: 14px;
+  bottom: 20px;
+  z-index: 1200;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+}
+
+.shop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1300;
+  width: min(330px, 92vw);
+  padding: 20px 16px;
+  overflow-y: auto;
+  border-left: 1px solid #dce8ee;
+  background: #f5fafc;
+  box-shadow: -8px 0 30px #06496720;
+  transform: translateX(110%);
+  visibility: hidden;
+  transition: transform .25s ease, visibility .25s;
+}
+
+.shop.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-header h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: #e2edf2;
+  color: var(--ink);
+  font-size: 25px;
+}
+
+.code-form {
+  margin-top: 18px;
+}
+
+.balance {
+  margin: 16px 0;
+  padding: 13px;
+  border: 1px solid #c8dce6;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.shop-message,
+.layout-status {
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.shop-message {
+  min-height: 34px;
+  margin: 10px 0;
+}
+
+.bad {
+  color: #bd3030;
+}
+
+.good {
+  color: #23883c;
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(4, 130px);
+  gap: 10px;
+}
+
+.sticker-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #dce8ee;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.sticker-cell img {
+  width: 100%;
+  height: 85px;
+  object-fit: contain;
+}
+
+.sticker-cell.is-locked img {
+  filter: grayscale(1);
+  opacity: .55;
+}
+
+.sticker-lock {
+  position: absolute;
+  top: 16px;
+  right: 10px;
+  width: 19px;
+  height: 16px;
+  border-radius: 3px;
+  background: #59636d;
+}
+
+.sticker-lock::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 4px;
+  width: 11px;
+  height: 11px;
+  border: 3px solid #59636d;
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+}
+
+.sticker-price {
+  margin-top: 5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sticker-empty {
+  border-style: dashed;
+  background: transparent;
+}
+
+.sticker-cell.denied {
+  animation: denied .4s ease;
+}
+
+@keyframes denied {
+  0%, 100% {
+    transform: translateX(0);
   }
 
-  button,
-  input {
-    font: inherit;
+  20%, 60% {
+    transform: translateX(-5px);
+    background: #ffe1e1;
+    border-color: #dc4b43;
   }
 
-  button {
-    cursor: pointer;
+  40%, 80% {
+    transform: translateX(5px);
+    background: #ffe1e1;
+    border-color: #dc4b43;
   }
+}
 
-  button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.shop-secondary {
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid #c8dce6;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+}
 
-  input:disabled {
-    opacity: 0.7;
-  }
+.sticker-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
+}
 
-  [hidden] {
-    display: none !important;
-  }
+.placed-sticker {
+  position: absolute;
+  width: 88px;
+  height: 88px;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
 
-  .game {
-    padding: 16px 12px 90px;
-  }
+.placed-sticker img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
 
-  .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 50;
+.remove-sticker {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #dce8ee;
+  border-radius: 50%;
+  background: #fff;
+  color: #bd3030;
+  font-size: 19px;
+}
 
-    max-width: 450px;
-    margin: 0 auto 18px;
-    padding: 8px 0;
+.placed-sticker:hover .remove-sticker,
+.placed-sticker.selected .remove-sticker,
+.placed-sticker:focus-within .remove-sticker {
+  display: block;
+}
 
-    background: #fff;
-  }
+.placement {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  cursor: crosshair;
+  touch-action: none;
+}
 
-  .action {
-    padding: 12px;
+.placement-hint {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  padding: 12px;
+  transform: translateX(-50%);
+  border: 1px solid #c8dce6;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+}
 
-    border: 0;
-    border-radius: 10px;
+.placement-hint button {
+  margin-left: 8px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: #e2edf2;
+  color: var(--ink);
+}
 
-    background: #279e45;
-    color: #fff;
-
-    font-weight: 700;
-  }
-
-  #watch {
-    width: 100%;
-    background: var(--ink);
-  }
-
-  #join {
-    background: #2f7fc4;
-  }
-
-  #stop {
-    background: #dc4b43;
-  }
-
-  #logout {
-    background: #718795;
-  }
-
-  .room-title,
-  .empty,
-  .status,
-  .hint {
-    text-align: center;
-  }
-
-  .room-title {
-    margin: 0 0 16px;
-    font-size: 14px;
-  }
-
-  .empty {
-    padding: 45px 10px;
-    color: #718795;
-  }
-
-  .arena {
-    overflow-x: auto;
-    padding-bottom: 10px;
-  }
-
+@media (max-width: 420px) {
   .players {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 35px;
-
-    width: max-content;
-    min-width: 100%;
-
-    margin: 0;
-    padding: 0 10px;
-
-    list-style: none;
-  }
-
-  .player {
-    flex: 0 0 174px;
-    width: 174px;
-    text-align: center;
-  }
-
-  .score {
-    height: 48px;
-
-    font-size: 40px;
-    line-height: 44px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .score-caption {
-    margin: 0 0 7px;
-    color: #718795;
-    font-size: 12px;
-  }
-
-  .stage {
-    position: relative;
-    height: 360px;
-  }
-
-  .track {
-    position: absolute;
-    top: 0;
-    left: 50%;
-
-    width: 94px;
-    height: 280px;
-    padding: 7px;
-
-    transform: translateX(-50%);
-    background: var(--track);
-  }
-
-  .track-inner {
-    position: relative;
-    height: 100%;
-  }
-
-  .fill {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-
-    height: 0;
-    background: var(--color);
-    transition: height 250ms ease;
-  }
-
-  .avatar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-
-    width: 174px;
-    height: 202px;
-
-    transform-origin: center bottom;
-  }
-
-  .avatar img {
-    position: absolute;
-    inset: 0;
-
-    width: 100%;
-    height: 100%;
-
-    object-fit: contain;
-    object-position: center bottom;
-  }
-
-  .avatar.is-speaking {
-    animation: speaking 650ms ease-in-out infinite;
-  }
-
-  @keyframes speaking {
-    0%,
-    100% {
-      transform: translateY(0) rotate(0);
-    }
-
-    35% {
-      transform: translateY(-2px) rotate(-0.5deg);
-    }
-
-    70% {
-      transform: translateY(-1px) rotate(0.5deg);
-    }
-  }
-
-  .name {
-    margin-top: 7px;
-    overflow: hidden;
-
-    font-size: 32px;
-    line-height: 42px;
-    font-weight: 800;
-
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .panel {
-    width: min(100%, 450px);
-    margin: 24px auto 0;
-    padding: 18px;
-
-    border: 1px solid #dce8ee;
-    border-radius: 16px;
-
-    background: #f5fafc;
+    justify-content: flex-start;
+    gap: 16px;
   }
 
   .fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  label,
-  .label {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  input {
-    width: 100%;
-    margin-top: 6px;
-    padding: 11px;
-
-    border: 1px solid #c8dce6;
-    border-radius: 9px;
-
-    background: #fff;
-    color: var(--ink);
-  }
-
-  input:focus {
-    outline: 2px solid #9bd8e4;
-  }
-
-  .label {
-    margin: 18px 0 8px;
+    grid-template-columns: 1fr;
   }
 
   .choices {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  .choice {
-    padding: 7px 4px;
-
-    border: 3px solid transparent;
-    border-radius: 12px;
-
-    background: #fff;
-    color: var(--ink);
-  }
-
-  .choice[aria-pressed="true"] {
-    border-color: var(--ink);
-    background: #e7f5fc;
-  }
-
-  .choice img {
-    display: block;
-    width: 100%;
-    height: 85px;
-    object-fit: contain;
-  }
-
-  .choice span {
-    display: block;
-    margin-top: 5px;
-    font-size: 12px;
-  }
-
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 16px;
-  }
-
-  .actions button {
-    flex: 1;
-  }
-
-  .status {
-    font-size: 13px;
-    line-height: 1.5;
-  }
-
-  .hint {
-    color: #718795;
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .error {
-    color: #bd3030;
-    font-size: 13px;
-    overflow-wrap: anywhere;
-  }
-
-  .meter {
-    height: 8px;
-    margin-top: 12px;
-    overflow: hidden;
-
-    border-radius: 99px;
-    background: #dce8ee;
-  }
-
-  .meter-fill {
-    width: 0;
-    height: 100%;
-    background: #38b65a;
-  }
-
-  /* Панель магазина */
-
-  .sticker-toggle {
-    position: fixed;
-    right: 14px;
-    bottom: 20px;
-    z-index: 1200;
-
-    padding: 12px 18px;
-
-    border: 0;
-    border-radius: 14px;
-
-    background: var(--ink);
-    color: #fff;
-
-    font-weight: 700;
-  }
-
-  .shop {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1300;
-
-    width: min(330px, 92vw);
-    padding: 20px 16px;
-    overflow-y: auto;
-
-    border-left: 1px solid #dce8ee;
-
-    background: #f5fafc;
-    box-shadow: -8px 0 30px #06496720;
-
-    transform: translateX(110%);
-    visibility: hidden;
-
-    transition:
-      transform 250ms ease,
-      visibility 250ms;
-  }
-
-  .shop.is-open {
-    transform: translateX(0);
-    visibility: visible;
-  }
-
-  .shop-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .shop-header h2 {
-    margin: 0;
-    font-size: 21px;
-  }
-
-  .close {
-    width: 36px;
-    height: 36px;
-
-    border: 0;
-    border-radius: 10px;
-
-    background: #e2edf2;
-    color: var(--ink);
-
-    font-size: 25px;
-  }
-
-  .code-form {
-    margin-top: 18px;
-  }
-
-  .balance {
-    margin: 16px 0;
-    padding: 13px;
-
-    border: 1px solid #c8dce6;
-    border-radius: 12px;
-
-    background: #fff;
-
-    font-size: 20px;
-    font-weight: 700;
-  }
-
-  .shop-message {
-    min-height: 34px;
-    margin: 10px 0;
-
-    font-size: 13px;
-    line-height: 1.4;
-  }
-
-  .shop-message.bad {
-    color: #bd3030;
-  }
-
-  .shop-message.good {
-    color: #23883c;
-  }
-
-  .sticker-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(4, 130px);
-    gap: 10px;
-  }
-
-  .sticker-cell {
-    position: relative;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    min-width: 0;
-    padding: 10px;
-
-    border: 1px solid #dce8ee;
-    border-radius: 14px;
-
-    background: #fff;
-    color: var(--ink);
-  }
-
-  .sticker-cell img {
-    width: 100%;
-    height: 85px;
-    object-fit: contain;
-  }
-
-  .sticker-cell.is-locked img {
-    filter: grayscale(1);
-    opacity: 0.55;
-  }
-
-  .sticker-lock {
-    position: absolute;
-    top: 16px;
-    right: 10px;
-
-    width: 19px;
-    height: 16px;
-
-    border-radius: 3px;
-    background: #59636d;
-  }
-
-  .sticker-lock::before {
-    content: "";
-
-    position: absolute;
-    top: -8px;
-    left: 4px;
-
-    width: 11px;
-    height: 11px;
-
-    border: 3px solid #59636d;
-    border-bottom: 0;
-    border-radius: 8px 8px 0 0;
-  }
-
-  .sticker-price {
-    margin-top: 5px;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .sticker-empty {
-    border-style: dashed;
-    background: transparent;
-  }
-
+@media (prefers-reduced-motion: reduce) {
+  .avatar.is-speaking,
   .sticker-cell.denied {
-    animation: denied 400ms ease;
+    animation: none;
   }
 
-  @keyframes denied {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-
-    20%,
-    60% {
-      transform: translateX(-5px);
-      background: #ffe1e1;
-      border-color: #dc4b43;
-    }
-
-    40%,
-    80% {
-      transform: translateX(5px);
-      background: #ffe1e1;
-      border-color: #dc4b43;
-    }
+  .shop,
+  .fill {
+    transition: none;
   }
-
-  .clear-stickers {
-    width: 100%;
-    margin-top: 16px;
-    padding: 11px;
-
-    border: 1px solid #c8dce6;
-    border-radius: 10px;
-
-    background: #fff;
-    color: var(--ink);
-  }
-
-  /* Личные стикеры */
-
-  .sticker-layer {
-    position: fixed;
-    inset: 0;
-    z-index: 1100;
-    pointer-events: none;
-  }
-
-  .placed-sticker {
-    position: absolute;
-
-    width: 88px;
-    height: 88px;
-
-    pointer-events: auto;
-    touch-action: none;
-    user-select: none;
-    cursor: grab;
-  }
-
-  .placed-sticker img {
-    width: 100%;
-    height: 100%;
-
-    object-fit: contain;
-    pointer-events: none;
-  }
-
-  .remove-sticker {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-
-    display: none;
-
-    width: 24px;
-    height: 24px;
-    padding: 0;
-
-    border: 1px solid #dce8ee;
-    border-radius: 50%;
-
-    background: #fff;
-    color: #bd3030;
-
-    font-size: 19px;
-  }
-
-  .placed-sticker:hover .remove-sticker,
-  .placed-sticker.selected .remove-sticker,
-  .placed-sticker:focus-within .remove-sticker {
-    display: block;
-  }
-
-  .placement {
-    position: fixed;
-    inset: 0;
-    z-index: 1400;
-
-    cursor: crosshair;
-    touch-action: none;
-  }
-
-  .placement-hint {
-    position: absolute;
-    top: 16px;
-    left: 50%;
-
-    width: max-content;
-    max-width: calc(100% - 24px);
-    padding: 12px;
-
-    transform: translateX(-50%);
-
-    border: 1px solid #c8dce6;
-    border-radius: 12px;
-
-    background: #fff;
-    font-size: 14px;
-  }
-
-  .placement-hint button {
-    margin-left: 8px;
-    padding: 5px 8px;
-
-    border: 0;
-    border-radius: 6px;
-
-    background: #e2edf2;
-    color: var(--ink);
-  }
-
-  @media (max-width: 420px) {
-    .players {
-      justify-content: flex-start;
-      gap: 16px;
-    }
-
-    .fields {
-      grid-template-columns: 1fr;
-    }
-
-    .choices {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .avatar.is-speaking,
-    .sticker-cell.denied {
-      animation: none;
-    }
-
-    .shop,
-    .fill {
-      transition: none;
-    }
-  }
+}
 </style>
 </head>
 
 <body>
+
 <main class="game">
 
   <div class="topbar">
@@ -709,7 +634,7 @@
     <ul id="players" class="players"></ul>
 
     <p id="empty" class="empty">
-      Присоединитесь к комнате или откройте табло
+      Введите имя и комнату, затем нажмите «Присоединиться».
     </p>
   </section>
 
@@ -747,11 +672,11 @@
         Присоединиться
       </button>
 
-      <button id="start" class="action" type="button" disabled>
+      <button id="start" class="action" type="button" hidden>
         Начать
       </button>
 
-      <button id="stop" class="action" type="button" disabled>
+      <button id="stop" class="action" type="button" hidden>
         Стоп
       </button>
 
@@ -760,24 +685,24 @@
       </button>
     </div>
 
-    <p id="status" class="status">Подключение…</p>
+    <p id="status" class="status">Подготовка игры…</p>
 
-    <div id="meterSection" class="meter">
+    <div id="meterSection" class="meter" hidden>
       <div id="meter" class="meter-fill"></div>
     </div>
 
     <p class="hint">
       Один громкий всплеск — одно звуковое очко.
-      Нажмите «Стоп», чтобы перевести результат в ОГЭшки.
+      Кнопка «Стоп» переводит звуковые очки в ОГЭшки.
       Курс: 1 очко = 1 ОГЭшка.
     </p>
 
     <p id="error" class="error" role="alert"></p>
-  </section>
 
+  </section>
 </main>
 
-<div id="stickerLayer" class="sticker-layer"></div>
+<div id="stickerLayer" class="sticker-layer" hidden></div>
 
 <button
   id="stickerToggle"
@@ -785,7 +710,7 @@
   type="button"
   aria-controls="shop"
   aria-expanded="false"
-  disabled
+  hidden
 >
   Стикеры
 </button>
@@ -829,28 +754,32 @@
 
   <div id="stickerGrid" class="sticker-grid"></div>
 
-  <button
-    id="clearStickers"
-    class="clear-stickers"
-    type="button"
-  >
+  <button id="clearStickers" class="shop-secondary" type="button">
     Убрать размещённые стикеры
   </button>
 
+  <p id="layoutStatus" class="layout-status" role="status"></p>
+
+  <button
+    id="retryLayout"
+    class="shop-secondary"
+    type="button"
+    hidden
+  >
+    Повторить сохранение расположения
+  </button>
+
   <p class="hint">
-    Первое нажатие покупает стикер за ОГЭшки.
-    Следующее позволяет разместить его.
-    Повторная оплата не нужна.
+    Первое нажатие покупает стикер.
+    Следующее позволяет разместить его без повторной оплаты.
+    Расположение сохраняется на сервере после перемещения.
   </p>
 </aside>
 
 <div id="placement" class="placement" hidden>
   <div class="placement-hint">
     Нажмите, куда поставить стикер
-
-    <button id="cancelPlacement" type="button">
-      Отмена
-    </button>
+    <button id="cancelPlacement" type="button">Отмена</button>
   </div>
 </div>
 
@@ -875,21 +804,18 @@
       closed: "./luigi2.png",
       open: "./luigi.png"
     },
-
     mario: {
       label: "Марио",
       color: "#e69a50",
       closed: "./mario2.png",
       open: "./mario.png"
     },
-
     peach: {
       label: "Пич",
       color: "#f5acd4",
       closed: "./peach2.png",
       open: "./peach.png"
     },
-
     yoshi: {
       label: "Йоши",
       color: "#79d8a0",
@@ -898,7 +824,6 @@
     }
   };
 
-  // Цены должны совпадать с SQL-функцией mp_buy_sticker.
   const STICKERS = [
     { id: 1, image: "./1.png", price: 50 },
     { id: 2, image: "./2.png", price: 100 },
@@ -928,7 +853,6 @@
   let context = null;
   let analyser = null;
   let frame = null;
-
   let loud = false;
   let silentSince = null;
   let lastPoint = -Infinity;
@@ -936,9 +860,9 @@
   let channel = null;
   let poll = null;
   let generation = 0;
-
   let refreshBusy = false;
   let refreshAgain = false;
+  let walletVersion = 0;
 
   let statePromise = null;
   let stateDirty = false;
@@ -947,28 +871,56 @@
   let selectedSticker = null;
   let stickerZ = 1;
 
+  let layoutKnown = false;
+  let layoutDirty = false;
+  let layoutRevision = 0;
+  let layoutPromise = null;
+
   const cards = new Map();
   const shopButtons = new Map();
 
+  function uuid() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 15) | 64;
+    bytes[8] = (bytes[8] & 63) | 128;
+
+    const hex = [...bytes].map(
+      value => value.toString(16).padStart(2, "0")
+    ).join("");
+
+    return [
+      hex.slice(0, 8),
+      hex.slice(8, 12),
+      hex.slice(12, 16),
+      hex.slice(16, 20),
+      hex.slice(20)
+    ].join("-");
+  }
+
   function showError(error) {
     console.error(error);
-
-    $("error").textContent =
-      error?.message || String(error);
+    $("error").textContent = error?.message || String(error);
   }
 
   function shopMessage(text, bad = false) {
     $("shopMessage").textContent = text;
-
     $("shopMessage").className =
       "shop-message " + (bad ? "bad" : "good");
   }
 
+  function layoutMessage(text, bad = false) {
+    $("layoutStatus").textContent = text;
+    $("layoutStatus").className =
+      "layout-status " + (bad ? "bad" : "good");
+
+    $("retryLayout").hidden = !bad;
+  }
+
   async function rpc(name, args) {
     const { data, error } = await db.rpc(name, args);
-
     if (error) throw error;
-
     return data;
   }
 
@@ -979,102 +931,86 @@
     };
   }
 
+  function samePerson(person) {
+    return identity &&
+      identity.room === person.room &&
+      identity.name === person.name;
+  }
+
   function localKey(prefix) {
     return identity
-      ? prefix + JSON.stringify([
-          identity.room,
-          identity.name
-        ])
+      ? prefix + JSON.stringify([identity.room, identity.name])
       : null;
   }
 
-  function saveSession() {
-    localStorage.setItem(
-      SESSION_KEY,
-      JSON.stringify({
-        mode: watching
-          ? "watch"
-          : identity
-            ? "player"
-            : "setup",
-
-        name: identity?.name || "",
-
-        room:
-          activeRoom ||
-          $("room").value.trim() ||
-          "party-1",
-
-        avatar: selectedAvatar
-      })
-    );
-  }
-
-  function saveSound() {
-    if (!identity) return;
-
-    localStorage.setItem(
-      localKey("mp-sound-v2:"),
-      JSON.stringify({
-        points: soundPoints,
-        pending: pendingTransfer
-      })
-    );
-  }
-
-  function loadSound() {
-    soundPoints = 0;
-    pendingTransfer = null;
-
+  function readLocal(key) {
     try {
-      const saved = JSON.parse(
-        localStorage.getItem(
-          localKey("mp-sound-v2:")
-        ) || "null"
-      );
+      return JSON.parse(localStorage.getItem(key) || "null");
+    } catch {
+      return null;
+    }
+  }
 
-      soundPoints = Math.max(
-        0,
-        Math.floor(Number(saved?.points) || 0)
-      );
-
-      if (
-        typeof saved?.pending?.id === "string" &&
-        Number.isInteger(saved.pending.points) &&
-        saved.pending.points > 0
-      ) {
-        pendingTransfer = saved.pending;
-        soundPoints = saved.pending.points;
-      }
+  function saveSession() {
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        name: identity?.name || $("name").value.trim(),
+        room: activeRoom || $("room").value.trim() || "party-1",
+        avatar: selectedAvatar
+      }));
     } catch (error) {
       console.error(error);
     }
   }
 
-  function setBalance(value) {
-    balance = Number(value) || 0;
+  function saveSound() {
+    if (!identity) return;
 
-    $("balance").textContent = String(balance);
-
-    // ОГЭшки не меняют шкалу звука.
+    try {
+      localStorage.setItem(
+        localKey("mp-sound-v2:"),
+        JSON.stringify({
+          points: soundPoints,
+          pending: pendingTransfer
+        })
+      );
+    } catch {
+      throw new Error(
+        "Браузер не разрешил сохранить звуковой результат. " +
+        "Не закрывайте страницу до успешного перевода."
+      );
+    }
   }
 
-  function paintOwnSound() {
-    const card = identity
-      ? cards.get(identity.name)
-      : null;
+  function loadSound() {
+    const saved = readLocal(localKey("mp-sound-v2:"));
 
-    if (!card) return;
+    soundPoints = Math.max(
+      0,
+      Math.floor(Number(saved?.points) || 0)
+    );
 
-    card.score.textContent = String(soundPoints);
+    pendingTransfer = null;
 
-    card.fill.style.height =
-      Math.max(
-        0,
-        Math.min(100, soundPoints)
-      ) + "%";
+    if (
+      typeof saved?.pending?.id === "string" &&
+      Number.isInteger(saved.pending.points) &&
+      saved.pending.points > 0
+    ) {
+      pendingTransfer = saved.pending;
+      soundPoints = saved.pending.points;
+    }
+  }
 
-    setMouth(card, loud);
+  function setBalance(value) {
+    balance = Number(value) || 0;
+    $("balance").textContent = String(balance);
+  }
+
+  function applyWallet(wallet) {
+    setBalance(wallet.score);
+    owned = new Set((wallet.owned || []).map(Number));
+    renderShopState();
   }
 
   function controls() {
@@ -1083,115 +1019,91 @@
     $("nameField").hidden = watching;
     $("avatarSection").hidden = watching;
     $("actions").hidden = watching;
-    $("meterSection").hidden = watching;
 
-    $("name").disabled =
-      !ready || busy || logged;
-
-    $("room").disabled =
-      !ready || busy || logged || watching;
+    $("name").disabled = !ready || busy || logged;
+    $("room").disabled = !ready || busy || logged || watching;
 
     $("join").hidden = logged;
+    $("join").disabled = !ready || busy;
 
-    $("join").disabled =
-      !ready ||
-      busy ||
-      !$("name").value.trim();
+    $("start").hidden = !logged;
+    $("stop").hidden = !logged;
+    $("logout").hidden = !logged;
 
     $("start").disabled =
-      !ready ||
-      busy ||
-      !logged ||
-      running ||
-      Boolean(pendingTransfer);
+      busy || running || Boolean(pendingTransfer);
 
     $("stop").disabled =
-      !logged ||
-      busy ||
-      (!running && soundPoints === 0);
+      busy || (!running && soundPoints === 0);
 
     $("stop").textContent = pendingTransfer
       ? "Повторить перевод"
       : "Стоп";
 
-    $("logout").hidden = !logged;
     $("logout").disabled = busy || running;
 
-    $("watch").disabled =
-      !ready || busy || running;
-
+    $("watch").disabled = !ready || busy || running;
     $("watch").textContent = watching
-      ? "Вернуться к игре"
+      ? "Вернуться к входу"
       : "Показать очки игроков";
 
-    $("stickerToggle").disabled =
-      !ready || busy || !logged;
+    $("meterSection").hidden = !logged;
+    $("stickerToggle").hidden = !logged;
+    $("stickerToggle").disabled = busy;
+
+    $("stickerLayer").hidden = !logged;
 
     $("codeInput").disabled = busy || !logged;
-    $("clearStickers").disabled = busy || !logged;
+    $("clearStickers").disabled =
+      busy || !logged || !layoutKnown;
 
-    document.querySelectorAll(".choice")
-      .forEach(button => {
-        button.disabled =
-          !ready || busy || running || logged;
+    $("retryLayout").disabled = busy || !logged;
 
-        button.setAttribute(
-          "aria-pressed",
-          String(
-            button.dataset.avatar === selectedAvatar
-          )
-        );
-      });
+    for (const button of document.querySelectorAll(".choice")) {
+      button.disabled = !ready || busy || logged;
+
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.avatar === selectedAvatar)
+      );
+    }
 
     for (const button of shopButtons.values()) {
-      button.disabled = busy || !logged;
+      button.disabled = busy || !logged || !layoutKnown;
     }
 
     $("roomTitle").hidden = !activeRoom;
-
-    $("roomTitle").textContent =
-      "Комната: " + activeRoom;
+    $("roomTitle").textContent = "Комната: " + activeRoom;
   }
 
   function renderChoices() {
     for (const [id, avatar] of Object.entries(AVATARS)) {
       const button = document.createElement("button");
-
       button.type = "button";
       button.className = "choice";
       button.dataset.avatar = id;
 
       const image = document.createElement("img");
-
       image.src = avatar.closed;
       image.alt = avatar.label;
 
-      const label = document.createElement("span");
+      const text = document.createElement("span");
+      text.textContent = avatar.label;
 
-      label.textContent = avatar.label;
-
-      button.append(image, label);
-
-      button.addEventListener("click", () => {
+      button.append(image, text);
+      button.onclick = () => {
         selectedAvatar = id;
         controls();
-      });
+      };
 
       $("choices").append(button);
     }
   }
 
   function setMouth(card, open) {
-    card.normal.hidden =
-      open && !card.openFailed;
-
-    card.talking.hidden =
-      !open || card.openFailed;
-
-    card.avatar.classList.toggle(
-      "is-speaking",
-      open
-    );
+    card.normal.hidden = open && !card.openFailed;
+    card.talking.hidden = !open || card.openFailed;
+    card.avatar.classList.toggle("is-speaking", open);
   }
 
   function createCard(player) {
@@ -1222,7 +1134,6 @@
 
     const normal = document.createElement("img");
     const talking = document.createElement("img");
-
     talking.hidden = true;
 
     const name = document.createElement("div");
@@ -1234,49 +1145,47 @@
     track.append(inner);
     avatar.append(normal, talking);
     stage.append(track, avatar);
-
-    item.append(
-      score,
-      caption,
-      stage,
-      name
-    );
+    item.append(score, caption, stage, name);
 
     const card = {
-      item,
-      score,
-      fill,
-      avatar,
-      normal,
-      talking,
+      item, score, fill, avatar, normal, talking,
       avatarId: null,
       openFailed: false
     };
 
-    talking.addEventListener("error", () => {
+    talking.onerror = () => {
       card.openFailed = true;
       talking.hidden = true;
       normal.hidden = false;
-    });
+    };
 
-    normal.addEventListener("error", () => {
+    normal.onerror = () => {
       showError(new Error(
-        "Не найдена картинка: " +
-        normal.getAttribute("src")
+        "Не найдена картинка: " + normal.getAttribute("src")
       ));
-    });
+    };
 
     return card;
   }
 
+  function paintOwnSound() {
+    const card = identity ? cards.get(identity.name) : null;
+    if (!card) return;
+
+    card.score.textContent = String(soundPoints);
+
+    card.fill.style.height =
+      Math.max(0, Math.min(100, soundPoints)) + "%";
+
+    setMouth(card, loud);
+  }
+
   function renderPlayers(players) {
-    const sorted = [...players].sort((a, b) =>
-      a.name.localeCompare(b.name, "ru")
+    const sorted = [...players].sort(
+      (a, b) => a.name.localeCompare(b.name, "ru")
     );
 
-    const names = new Set(
-      sorted.map(player => player.name)
-    );
+    const names = new Set(sorted.map(player => player.name));
 
     for (const [name, card] of cards) {
       if (!names.has(name)) {
@@ -1302,24 +1211,18 @@
       if (card.avatarId !== avatarId) {
         card.avatarId = avatarId;
         card.openFailed = false;
-
         card.normal.src = avatar.closed;
         card.talking.src = avatar.open;
-
         card.normal.alt = avatar.label;
         card.talking.alt = avatar.label;
-
-        card.item.style.setProperty(
-          "--color",
-          avatar.color
-        );
+        card.item.style.setProperty("--color", avatar.color);
       }
 
       const own =
-        identity &&
-        !watching &&
+        identity && !watching &&
         player.name === identity.name;
 
+      // Поле score сюда никогда не попадает.
       const points = own
         ? soundPoints
         : Number(player.sound_score) || 0;
@@ -1327,31 +1230,19 @@
       card.score.textContent = String(points);
 
       card.fill.style.height =
-        Math.max(
-          0,
-          Math.min(100, points)
-        ) + "%";
+        Math.max(0, Math.min(100, points)) + "%";
 
-      setMouth(
-        card,
-        own ? loud : Boolean(player.is_loud)
-      );
+      setMouth(card, own ? loud : Boolean(player.is_loud));
 
-      const current =
-        $("players").children[index];
+      const current = $("players").children[index];
 
       if (current !== card.item) {
-        $("players").insertBefore(
-          card.item,
-          current || null
-        );
+        $("players").insertBefore(card.item, current || null);
       }
     });
 
     $("empty").hidden = sorted.length > 0;
-
-    $("empty").textContent =
-      "В этой комнате пока нет игроков";
+    $("empty").textContent = "В этой комнате пока нет игроков";
   }
 
   async function refresh() {
@@ -1366,14 +1257,10 @@
 
     const version = generation;
     const room = activeRoom;
-
-    const person = identity
-      ? { ...identity }
-      : null;
+    const person = identity ? { ...identity } : null;
 
     try {
-      const { data, error } = await db
-        .from("players")
+      const { data, error } = await db.from("players")
         .select("name,avatar,is_loud,sound_score")
         .eq("room", room);
 
@@ -1382,29 +1269,25 @@
 
       renderPlayers(data || []);
 
-      if (person && !watching) {
-        const wallet = await rpc(
-          "mp_wallet",
-          {
-            p_room: person.room,
-            p_name: person.name
-          }
-        );
+      if (person && !watching && !busy) {
+        const walletStamp = walletVersion;
 
-        if (version !== generation) return;
+        const wallet = await rpc("mp_wallet", {
+          p_room: person.room,
+          p_name: person.name
+        });
 
-        setBalance(wallet.score);
-
-        owned = new Set(
-          (wallet.owned || []).map(Number)
-        );
-
-        renderShopState();
+        if (
+          version === generation &&
+          walletStamp === walletVersion &&
+          samePerson(person) &&
+          !busy
+        ) {
+          applyWallet(wallet);
+        }
       }
     } catch (error) {
-      if (version === generation) {
-        showError(error);
-      }
+      if (version === generation) showError(error);
     } finally {
       refreshBusy = false;
 
@@ -1417,7 +1300,6 @@
 
   function stopUpdates() {
     generation++;
-
     clearInterval(poll);
     poll = null;
 
@@ -1432,21 +1314,14 @@
 
     const version = generation;
 
-    channel = db
-      .channel("party-" + crypto.randomUUID())
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "players"
-        },
-        () => {
-          if (version === generation) {
-            refresh();
-          }
-        }
-      )
+    channel = db.channel("party-" + uuid())
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "players"
+      }, () => {
+        if (version === generation) refresh();
+      })
       .subscribe();
 
     poll = setInterval(() => {
@@ -1460,13 +1335,10 @@
     refresh();
   }
 
-  // Последовательная публикация звукового состояния.
-  // Поле score (кошелёк) здесь не изменяется.
   function queueSoundState() {
     if (!identity || watching) return;
 
     stateDirty = true;
-
     clearTimeout(stateTimer);
 
     stateTimer = setTimeout(() => {
@@ -1477,9 +1349,7 @@
   function flushSoundState() {
     clearTimeout(stateTimer);
 
-    if (statePromise) {
-      return statePromise;
-    }
+    if (statePromise) return statePromise;
 
     if (!identity || watching || !db) {
       return Promise.resolve();
@@ -1491,8 +1361,7 @@
 
         const person = { ...identity };
 
-        const { error } = await db
-          .from("players")
+        const { error } = await db.from("players")
           .update({
             sound_score: soundPoints,
             is_loud: loud
@@ -1514,56 +1383,90 @@
 
   function setLoud(value) {
     loud = value;
-
     paintOwnSound();
     queueSoundState();
   }
 
   async function join() {
-    if (busy || identity || !ready) return;
+    if (!ready || busy || identity || watching) return;
 
     const name = $("name").value.trim();
+    const room = $("room").value.trim() || "party-1";
 
-    const room =
-      $("room").value.trim() || "party-1";
-
-    if (!name) return;
+    if (!name) {
+      $("error").textContent = "Введите имя игрока.";
+      $("name").focus();
+      return;
+    }
 
     busy = true;
-
     $("error").textContent = "";
+    $("status").textContent = "Входим в комнату…";
     controls();
 
     try {
-      const result = await rpc(
-        "mp_join",
-        {
-          p_room: room,
-          p_name: name,
-          p_avatar: selectedAvatar
-        }
-      );
+      await rpc("mp_join", {
+        p_room: room,
+        p_name: name,
+        p_avatar: selectedAvatar
+      });
+
+      const wallet = await rpc("mp_wallet", {
+        p_room: room,
+        p_name: name
+      });
 
       identity = { name, room };
       activeRoom = room;
       watching = false;
-      owned = new Set();
 
-      setBalance(result.score);
+      walletVersion++;
+      applyWallet(wallet);
 
       loadSound();
       saveSession();
-      loadPositions();
+
+      $("stickerLayer").replaceChildren();
+
+      layoutKnown = false;
+      layoutDirty = false;
+      layoutRevision = 0;
+
+      // Ошибка хранилища стикеров не отменяет вход в комнату.
+      try {
+        await loadServerLayout();
+      } catch (error) {
+        layoutMessage(
+          "Профиль открыт, но стикеры не загрузились: " +
+          error.message,
+          true
+        );
+      }
 
       queueSoundState();
       startUpdates();
 
       $("status").textContent = pendingTransfer
-        ? "Есть незавершённый перевод. Нажмите «Повторить перевод»."
-        : "Вы вошли как «" + name + "». Можно начинать.";
+        ? "Вы вошли. Нажмите «Повторить перевод»."
+        : "Вы вошли как «" + name +
+          "» в комнату «" + room + "».";
 
     } catch (error) {
+      stopUpdates();
+      identity = null;
+      activeRoom = "";
+      owned = new Set();
+
+      $("stickerLayer").replaceChildren();
+
+      setBalance(0);
+      renderShopState();
+
       showError(error);
+
+      $("status").textContent =
+        "Не удалось войти. Проверьте сообщение об ошибке.";
+
     } finally {
       busy = false;
       controls();
@@ -1571,19 +1474,11 @@
   }
 
   async function start() {
-    if (
-      busy ||
-      running ||
-      !identity ||
-      pendingTransfer
-    ) {
-      return;
-    }
+    if (busy || running || !identity || pendingTransfer) return;
 
     busy = true;
-
-    controls();
     $("error").textContent = "";
+    controls();
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
@@ -1592,35 +1487,28 @@
         );
       }
 
-      stream = await navigator.mediaDevices
-        .getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: false,
-            autoGainControl: false
-          }
-        });
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
 
       const AudioClass =
-        window.AudioContext ||
-        window.webkitAudioContext;
+        window.AudioContext || window.webkitAudioContext;
 
       if (!AudioClass) {
-        throw new Error(
-          "Браузер не поддерживает обработку звука."
-        );
+        throw new Error("Браузер не поддерживает обработку звука.");
       }
 
       context = new AudioClass();
-
       await context.resume();
 
       analyser = context.createAnalyser();
       analyser.fftSize = 1024;
 
-      context
-        .createMediaStreamSource(stream)
-        .connect(analyser);
+      context.createMediaStreamSource(stream).connect(analyser);
 
       running = true;
       silentSince = null;
@@ -1636,7 +1524,6 @@
     } catch (error) {
       stopMicrophone();
       showError(error);
-
     } finally {
       busy = false;
       controls();
@@ -1649,15 +1536,10 @@
     cancelAnimationFrame(frame);
     frame = null;
 
-    stream?.getTracks().forEach(track => {
-      track.stop();
-    });
-
+    stream?.getTracks().forEach(track => track.stop());
     stream = null;
 
-    if (context) {
-      context.close().catch(console.error);
-    }
+    if (context) context.close().catch(console.error);
 
     context = null;
     analyser = null;
@@ -1665,14 +1547,11 @@
     loud = false;
 
     $("meter").style.width = "0%";
-
     paintOwnSound();
   }
 
   function analyse() {
-    const data = new Uint8Array(
-      analyser.fftSize
-    );
+    const data = new Uint8Array(analyser.fftSize);
 
     function tick() {
       if (!running || !analyser) return;
@@ -1688,9 +1567,7 @@
 
       const level = Math.min(
         100,
-        Math.round(
-          Math.sqrt(sum / data.length) * 300
-        )
+        Math.round(Math.sqrt(sum / data.length) * 300)
       );
 
       $("meter").style.width = level + "%";
@@ -1699,15 +1576,10 @@
 
       if (level >= 35) {
         silentSince = null;
-
-        if (!loud) {
-          setLoud(true);
-        }
+        if (!loud) setLoud(true);
 
       } else if (loud && level < 25) {
-        if (silentSince === null) {
-          silentSince = now;
-        }
+        if (silentSince === null) silentSince = now;
 
         if (now - silentSince >= 180) {
           loud = false;
@@ -1742,15 +1614,104 @@
     if (busy || !identity) return;
 
     busy = true;
+    walletVersion++;
 
     stopMicrophone();
 
-    controls();
     $("error").textContent = "";
+    controls();
 
     try {
-      // Закрываем рот и дожидаемся всех предыдущих
-      // записей звукового состояния.
+      stateDirty = true;
+
+      try {
+        await flushSoundState();
+      } catch (error) {
+        console.error(error);
+      }
+
+      if (soundPoints <= 0 && !pendingTransfer) {
+        $("status").textContent =
+          "Микрофон выключен. Звуковых очков пока нет.";
+        return;
+      }
+
+      if (!pendingTransfer) {
+        pendingTransfer = {
+          id: uuid(),
+          points: soundPoints
+        };
+      }
+
+      saveSound();
+
+      const result = await rpc("mp_bank_noise", {
+        ...playerArgs(),
+        p_points: pendingTransfer.points,
+        p_transfer_id: pendingTransfer.id
+      });
+
+      const added = pendingTransfer.points;
+
+      soundPoints = 0;
+      pendingTransfer = null;
+
+      setBalance(result.balance);
+      paintOwnSound();
+      queueSoundState();
+
+      try {
+        saveSound();
+      } catch (error) {
+        showError(error);
+      }
+
+      $("status").textContent =
+        "Микрофон выключен. Начислено " + added + " ОГЭшек.";
+
+      shopMessage("За звук начислено +" + added + " ОГЭшек.");
+
+    } catch (error) {
+      showError(error);
+
+      $("status").textContent =
+        "Перевод не подтверждён. Нажмите «Повторить перевод».";
+    } finally {
+      busy = false;
+      walletVersion++;
+      controls();
+      refresh();
+    }
+  }
+
+  async function leave() {
+    if (busy || running || !identity) return false;
+
+    if (soundPoints > 0 || pendingTransfer) {
+      $("status").textContent =
+        "Сначала нажмите «Стоп», чтобы перевести очки в ОГЭшки.";
+      return false;
+    }
+
+    busy = true;
+    controls();
+
+    try {
+      cancelPlacement();
+
+      if (layoutDirty) {
+        await savePositions();
+
+        if (layoutDirty) {
+          throw new Error(
+            "Расположение стикеров ещё не сохранено. " +
+            "Повторите сохранение перед выходом."
+          );
+        }
+      } else if (layoutPromise) {
+        await layoutPromise;
+      }
+
       stateDirty = true;
 
       try {
@@ -1760,128 +1721,45 @@
       }
 
       clearTimeout(stateTimer);
+      stateDirty = false;
 
-      if (soundPoints <= 0 && !pendingTransfer) {
-        $("status").textContent =
-          "Микрофон выключен. Звуковых очков пока нет.";
-
-        return;
-      }
-
-      if (!pendingTransfer) {
-        pendingTransfer = {
-          id: crypto.randomUUID(),
-          points: soundPoints
-        };
-      }
-
-      // Сначала сохраняем перевод локально,
-      // затем отправляем его серверу.
-      saveSound();
-
-      const result = await rpc(
-        "mp_bank_noise",
-        {
-          ...playerArgs(),
-          p_points: pendingTransfer.points,
-          p_transfer_id: pendingTransfer.id
-        }
-      );
-
-      const added = pendingTransfer.points;
-
-      soundPoints = 0;
-      pendingTransfer = null;
-
-      saveSound();
-
-      setBalance(result.balance);
-      paintOwnSound();
-
-      queueSoundState();
-
-      $("status").textContent =
-        "Микрофон выключен. Начислено " +
-        added + " ОГЭшек.";
-
-      shopMessage(
-        "За звук начислено +" + added + " ОГЭшек."
-      );
-
-      refresh();
-
-    } catch (error) {
-      showError(error);
-
-      $("status").textContent =
-        "Не удалось завершить перевод. " +
-        "Нажмите «Повторить перевод». " +
-        "Повторного начисления одного перевода не будет.";
-
-    } finally {
-      busy = false;
-      controls();
-    }
-  }
-
-  async function leave() {
-    if (busy || running) return false;
-
-    if (soundPoints > 0 || pendingTransfer) {
-      $("status").textContent =
-        "Сначала нажмите «Стоп», чтобы перевести очки в ОГЭшки.";
-
-      return false;
-    }
-
-    busy = true;
-    controls();
-
-    try {
-      stateDirty = true;
-
-      await flushSoundState();
-
+      saveSession();
       stopUpdates();
 
       identity = null;
       activeRoom = "";
-      watching = false;
-      loud = false;
-
-      stateDirty = false;
-      clearTimeout(stateTimer);
-
       owned = new Set();
 
+      soundPoints = 0;
+      pendingTransfer = null;
+
+      layoutKnown = false;
+      layoutDirty = false;
+      layoutRevision = 0;
+
       cards.clear();
-
       $("players").replaceChildren();
-      $("empty").hidden = false;
-
-      $("empty").textContent =
-        "Введите имя и присоединитесь к комнате";
-
       $("stickerLayer").replaceChildren();
+      $("codeInput").value = "";
+
+      $("empty").hidden = false;
+      $("empty").textContent =
+        "Введите имя и комнату, затем нажмите «Присоединиться».";
 
       setShop(false);
-      cancelPlacement();
-
-      localStorage.removeItem(SESSION_KEY);
-
       setBalance(0);
       renderShopState();
+      shopMessage("");
+      layoutMessage("");
 
       $("status").textContent =
-        "Вы вышли. ОГЭшки и покупки сохранены.";
+        "Вы вышли. Теперь можно выбрать другое имя или комнату.";
 
       return true;
 
     } catch (error) {
       showError(error);
-
       return false;
-
     } finally {
       busy = false;
       controls();
@@ -1889,43 +1767,33 @@
   }
 
   async function toggleWatch() {
-    if (busy || running) return;
+    if (!ready || busy || running) return;
 
-    if (identity) {
-      const left = await leave();
-
-      if (!left) return;
-    }
+    if (identity && !(await leave())) return;
 
     if (watching) {
       stopUpdates();
-
       watching = false;
       activeRoom = "";
-
-      localStorage.removeItem(SESSION_KEY);
 
       cards.clear();
       $("players").replaceChildren();
 
       $("empty").hidden = false;
-
       $("empty").textContent =
-        "Введите имя и присоединитесь к комнате";
+        "Введите имя и комнату, затем нажмите «Присоединиться».";
+
+      $("status").textContent = "Выберите комнату для входа.";
 
     } else {
       watching = true;
+      activeRoom = $("room").value.trim() || "party-1";
 
-      activeRoom =
-        $("room").value.trim() || "party-1";
+      $("status").textContent =
+        "Табло звуковых очков. ОГЭшки здесь не отображаются.";
 
-      saveSession();
       startUpdates();
     }
-
-    $("status").textContent = watching
-      ? "Табло звуковых очков. ОГЭшки здесь не отображаются."
-      : "Введите имя и присоединитесь к комнате.";
 
     controls();
   }
@@ -1933,16 +1801,8 @@
   function setShop(open) {
     if (open && (!identity || watching)) return;
 
-    $("shop").classList.toggle(
-      "is-open",
-      open
-    );
-
-    $("shop").setAttribute(
-      "aria-hidden",
-      String(!open)
-    );
-
+    $("shop").classList.toggle("is-open", open);
+    $("shop").setAttribute("aria-hidden", String(!open));
     $("shop").inert = !open;
 
     $("stickerToggle").setAttribute(
@@ -1956,49 +1816,33 @@
       const sticker = STICKERS[index];
 
       if (!sticker) {
-        const empty = document.createElement("div");
-
-        empty.className =
-          "sticker-cell sticker-empty";
-
-        empty.setAttribute(
-          "aria-hidden",
-          "true"
-        );
-
-        $("stickerGrid").append(empty);
-
+        const cell = document.createElement("div");
+        cell.className = "sticker-cell sticker-empty";
+        cell.setAttribute("aria-hidden", "true");
+        $("stickerGrid").append(cell);
         continue;
       }
 
       const button = document.createElement("button");
-
       button.type = "button";
       button.className = "sticker-cell";
 
       const image = document.createElement("img");
-
       image.src = sticker.image;
       image.alt = "Стикер " + sticker.id;
       image.draggable = false;
 
       const lock = document.createElement("span");
-
       lock.className = "sticker-lock";
       lock.setAttribute("aria-hidden", "true");
 
       const price = document.createElement("span");
-
       price.className = "sticker-price";
 
       button.append(image, lock, price);
-
-      button.addEventListener("click", () => {
-        stickerClick(sticker, button);
-      });
+      button.onclick = () => stickerClick(sticker, button);
 
       shopButtons.set(sticker.id, button);
-
       $("stickerGrid").append(button);
     }
 
@@ -2008,25 +1852,13 @@
   function renderShopState() {
     for (const sticker of STICKERS) {
       const button = shopButtons.get(sticker.id);
-
-      if (!button) continue;
-
       const purchased = owned.has(sticker.id);
 
-      button.classList.toggle(
-        "is-locked",
-        !purchased
-      );
+      button.classList.toggle("is-locked", !purchased);
+      button.querySelector(".sticker-lock").hidden = purchased;
 
-      button.querySelector(
-        ".sticker-lock"
-      ).hidden = purchased;
-
-      button.querySelector(
-        ".sticker-price"
-      ).textContent = purchased
-        ? "Разместить"
-        : sticker.price + " ОГЭшек";
+      button.querySelector(".sticker-price").textContent =
+        purchased ? "Разместить" : sticker.price + " ОГЭшек";
 
       button.title = purchased
         ? "Разместить стикер"
@@ -2034,76 +1866,62 @@
 
       button.setAttribute(
         "aria-label",
-        "Стикер " +
-        sticker.id +
-        ". " +
-        button.title
+        "Стикер " + sticker.id + ". " + button.title
       );
     }
   }
 
   async function stickerClick(sticker, button) {
-    if (!identity || busy || watching) return;
+    if (!identity || busy || watching || !layoutKnown) return;
 
     if (owned.has(sticker.id)) {
+      if ($("stickerLayer").children.length >= 300) {
+        shopMessage("Можно разместить не более 300 стикеров.", true);
+        return;
+      }
+
       selectedSticker = sticker;
-
       setShop(false);
-
       $("placement").hidden = false;
-
       return;
     }
 
     busy = true;
+    walletVersion++;
     controls();
 
     try {
-      const result = await rpc(
-        "mp_buy_sticker",
-        {
-          ...playerArgs(),
-          p_sticker: sticker.id
-        }
-      );
+      const result = await rpc("mp_buy_sticker", {
+        ...playerArgs(),
+        p_sticker: sticker.id
+      });
 
       setBalance(result.score);
 
       if (result.status === "insufficient") {
         button.classList.remove("denied");
-
         void button.offsetWidth;
-
         button.classList.add("denied");
 
-        setTimeout(() => {
-          button.classList.remove("denied");
-        }, 500);
+        setTimeout(() => button.classList.remove("denied"), 500);
 
-        shopMessage(
-          "Недостаточно ОГЭшек для покупки.",
-          true
-        );
+        shopMessage("Недостаточно ОГЭшек для покупки.", true);
 
       } else {
-        owned.add(sticker.id);
-
-        renderShopState();
+        const wallet = await rpc("mp_wallet", playerArgs());
+        applyWallet(wallet);
 
         shopMessage(
-          result.status === "bought"
-            ? "Стикер куплен! Нажмите ещё раз, чтобы разместить."
-            : "Стикер уже куплен. Можно разместить."
+          owned.has(sticker.id)
+            ? "Стикер доступен. Нажмите ещё раз, чтобы разместить."
+            : "Покупка не подтверждена. Проверьте баланс."
         );
       }
-
-      refresh();
-
     } catch (error) {
       shopMessage(error.message, true);
-
     } finally {
       busy = false;
+      walletVersion++;
       controls();
     }
   }
@@ -2114,278 +1932,259 @@
     if (!identity || busy || watching) return;
 
     const code = $("codeInput").value.trim();
-
     if (!code) return;
 
     busy = true;
-
+    walletVersion++;
     controls();
+
     shopMessage("Проверяем код…");
 
     try {
-      const result = await rpc(
-        "mp_redeem",
-        {
-          ...playerArgs(),
-          p_code: code
-        }
-      );
+      const result = await rpc("mp_redeem", {
+        ...playerArgs(),
+        p_code: code
+      });
 
-      // Код пополняет только ОГЭшки.
+      // Меняется только кошелёк ОГЭшек.
       setBalance(result.score);
 
       $("codeInput").value = "";
 
       shopMessage(
-        "Начислено +" +
-        result.added +
-        " ОГЭшек!"
+        "Начислено +" + result.added + " ОГЭшек!"
       );
-
-      refresh();
 
     } catch (error) {
       shopMessage(error.message, true);
-
     } finally {
       busy = false;
+      walletVersion++;
       controls();
     }
   }
 
-  function positionKey() {
-    return localKey("mp-positions-v1:");
-  }
-
-  function savePositions() {
-    if (!identity) return;
-
-    const positions = [
-      ...$("stickerLayer").children
-    ].map(element => ({
+  function currentPositions() {
+    return [...$("stickerLayer").children].map(element => ({
       id: Number(element.dataset.id),
       left: parseFloat(element.style.left) || 0,
       top: parseFloat(element.style.top) || 0
     }));
+  }
 
-    try {
-      localStorage.setItem(
-        positionKey(),
-        JSON.stringify(positions)
-      );
-    } catch (error) {
-      console.error(error);
+  function changedLayout() {
+    layoutRevision++;
+    layoutDirty = true;
+    savePositions();
+  }
 
-      shopMessage(
-        "Не удалось сохранить позиции стикеров.",
-        true
-      );
+  function savePositions() {
+    if (!identity || !layoutKnown || !layoutDirty) {
+      return layoutPromise || Promise.resolve();
+    }
+
+    if (layoutPromise) return layoutPromise;
+
+    const person = { ...identity };
+
+    layoutPromise = (async () => {
+      while (layoutDirty && samePerson(person)) {
+        const revision = layoutRevision;
+        const positions = currentPositions();
+
+        layoutMessage("Сохраняем расположение на сервере…");
+
+        try {
+          await rpc("mp_save_sticker_layout", {
+            p_room: person.room,
+            p_name: person.name,
+            p_positions: positions
+          });
+        } catch (error) {
+          layoutMessage(
+            "Расположение не сохранено: " + error.message,
+            true
+          );
+          return;
+        }
+
+        if (!samePerson(person)) return;
+
+        if (revision === layoutRevision) {
+          layoutDirty = false;
+          layoutMessage("Расположение сохранено на сервере.");
+        }
+      }
+    })().finally(() => {
+      layoutPromise = null;
+    });
+
+    return layoutPromise;
+  }
+
+  async function loadServerLayout() {
+    if (!identity) return;
+
+    const person = { ...identity };
+
+    const result = await rpc("mp_get_sticker_layout", {
+      p_room: person.room,
+      p_name: person.name
+    });
+
+    if (!samePerson(person)) return;
+
+    let positions = result;
+    let migrate = false;
+
+    // Однократный перенос старого браузерного сохранения.
+    if (result === null) {
+      const old = readLocal(localKey("mp-positions-v1:"));
+      positions = Array.isArray(old) ? old : [];
+      migrate = positions.length > 0;
+    }
+
+    if (!Array.isArray(positions)) {
+      throw new Error("Сервер вернул некорректное расположение.");
+    }
+
+    $("stickerLayer").replaceChildren();
+    stickerZ = 1;
+
+    for (const position of positions.slice(0, 300)) {
+      const id = Number(position.id);
+      const left = Number(position.left);
+      const top = Number(position.top);
+
+      if (
+        !owned.has(id) ||
+        !Number.isFinite(left) ||
+        !Number.isFinite(top)
+      ) continue;
+
+      const sticker = STICKERS.find(item => item.id === id);
+      if (!sticker) continue;
+
+      placeSticker(sticker, left, top, false);
+    }
+
+    layoutKnown = true;
+    layoutDirty = false;
+    layoutRevision = 0;
+
+    layoutMessage("Расположение загружено.");
+    controls();
+
+    if (migrate) {
+      changedLayout();
+      await savePositions();
     }
   }
 
   function moveSticker(element, left, top) {
     element.style.left = Math.max(
       0,
-      Math.min(
-        left,
-        Math.max(0, innerWidth - 88)
-      )
+      Math.min(left, Math.max(0, innerWidth - 88))
     ) + "px";
 
     element.style.top = Math.max(
       0,
-      Math.min(
-        top,
-        Math.max(0, innerHeight - 88)
-      )
+      Math.min(top, Math.max(0, innerHeight - 88))
     ) + "px";
   }
 
-  function loadPositions() {
-    $("stickerLayer").replaceChildren();
-
-    stickerZ = 1;
-
-    if (!identity) return;
-
-    let positions = [];
-
-    try {
-      positions = JSON.parse(
-        localStorage.getItem(
-          positionKey()
-        ) || "[]"
-      );
-    } catch (error) {
-      console.error(error);
-    }
-
-    if (!Array.isArray(positions)) return;
-
-    for (const position of positions) {
-      const sticker = STICKERS.find(
-        item => item.id === Number(position.id)
-      );
-
-      if (!sticker) continue;
-
-      placeSticker(
-        sticker,
-        Number(position.left) || 0,
-        Number(position.top) || 0,
-        false
-      );
-    }
-  }
-
-  function placeSticker(
-    sticker,
-    left,
-    top,
-    save = true
-  ) {
+  function placeSticker(sticker, left, top, save = true) {
     const element = document.createElement("div");
-
     element.className = "placed-sticker";
     element.dataset.id = sticker.id;
     element.style.zIndex = String(stickerZ++);
 
     const image = document.createElement("img");
-
     image.src = sticker.image;
     image.alt = "Стикер " + sticker.id;
     image.draggable = false;
 
     const remove = document.createElement("button");
-
     remove.type = "button";
     remove.className = "remove-sticker";
     remove.textContent = "×";
+    remove.setAttribute("aria-label", "Убрать стикер");
 
-    remove.setAttribute(
-      "aria-label",
-      "Убрать стикер"
-    );
+    remove.onpointerdown = event => event.stopPropagation();
 
-    remove.addEventListener(
-      "pointerdown",
-      event => event.stopPropagation()
-    );
-
-    remove.addEventListener("click", () => {
+    remove.onclick = () => {
+      if (busy || !identity) return;
       element.remove();
-      savePositions();
-    });
+      changedLayout();
+    };
 
     element.append(image, remove);
-
     $("stickerLayer").append(element);
 
     moveSticker(element, left, top);
 
-    if (save) savePositions();
+    if (save) changedLayout();
 
     let drag = null;
 
-    element.addEventListener(
-      "pointerdown",
-      event => {
-        if (
-          event.target.closest("button") ||
-          event.button !== 0 ||
-          !event.isPrimary
-        ) {
-          return;
-        }
+    element.onpointerdown = event => {
+      if (
+        busy ||
+        !identity ||
+        event.target.closest("button") ||
+        event.button !== 0 ||
+        !event.isPrimary
+      ) return;
 
-        event.preventDefault();
+      event.preventDefault();
 
-        document.querySelectorAll(
-          ".placed-sticker.selected"
-        ).forEach(item => {
-          item.classList.remove("selected");
-        });
+      document.querySelectorAll(".placed-sticker.selected")
+        .forEach(item => item.classList.remove("selected"));
 
-        element.classList.add("selected");
+      element.classList.add("selected");
+      element.style.zIndex = String(stickerZ++);
 
-        element.style.zIndex =
-          String(stickerZ++);
+      const rect = element.getBoundingClientRect();
 
-        const rect =
-          element.getBoundingClientRect();
+      drag = {
+        id: event.pointerId,
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
 
-        drag = {
-          id: event.pointerId,
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top
-        };
+      element.setPointerCapture(event.pointerId);
+    };
 
-        element.setPointerCapture(
-          event.pointerId
-        );
-      }
-    );
+    element.onpointermove = event => {
+      if (!drag || drag.id !== event.pointerId) return;
 
-    element.addEventListener(
-      "pointermove",
-      event => {
-        if (
-          !drag ||
-          drag.id !== event.pointerId
-        ) {
-          return;
-        }
-
-        moveSticker(
-          element,
-          event.clientX - drag.x,
-          event.clientY - drag.y
-        );
-      }
-    );
+      moveSticker(
+        element,
+        event.clientX - drag.x,
+        event.clientY - drag.y
+      );
+    };
 
     function endDrag(event) {
-      if (
-        !drag ||
-        drag.id !== event.pointerId
-      ) {
-        return;
-      }
+      if (!drag || drag.id !== event.pointerId) return;
 
       drag = null;
+      changedLayout();
 
-      savePositions();
-
-      if (
-        element.hasPointerCapture(
-          event.pointerId
-        )
-      ) {
-        element.releasePointerCapture(
-          event.pointerId
-        );
+      if (element.hasPointerCapture(event.pointerId)) {
+        element.releasePointerCapture(event.pointerId);
       }
     }
 
-    element.addEventListener(
-      "pointerup",
-      endDrag
-    );
+    element.onpointerup = endDrag;
+    element.onpointercancel = endDrag;
 
-    element.addEventListener(
-      "pointercancel",
-      endDrag
-    );
-
-    element.addEventListener(
-      "lostpointercapture",
-      () => {
-        if (drag) {
-          drag = null;
-          savePositions();
-        }
+    element.onlostpointercapture = () => {
+      if (drag) {
+        drag = null;
+        changedLayout();
       }
-    );
+    };
   }
 
   function cancelPlacement() {
@@ -2393,12 +2192,43 @@
     $("placement").hidden = true;
   }
 
+  async function retryLayout() {
+    if (!identity || busy) return;
+
+    busy = true;
+    controls();
+
+    try {
+      if (!layoutKnown) {
+        await loadServerLayout();
+      } else {
+        await savePositions();
+      }
+    } catch (error) {
+      layoutMessage(error.message, true);
+    } finally {
+      busy = false;
+      controls();
+    }
+  }
+
   async function init() {
+    // Никакого автоматического входа.
+    identity = null;
+    watching = false;
+    activeRoom = "";
+
+    $("stickerLayer").replaceChildren();
+    $("stickerLayer").hidden = true;
+    $("stickerToggle").hidden = true;
+
+    setShop(false);
+    cancelPlacement();
+    setBalance(0);
+
     try {
       if (!window.supabase?.createClient) {
-        throw new Error(
-          "Не загрузилась библиотека Supabase."
-        );
+        throw new Error("Не загрузилась библиотека Supabase.");
       }
 
       db = window.supabase.createClient(
@@ -2406,284 +2236,161 @@
         SUPABASE_KEY
       );
 
-      const testKey = "mp-storage-test";
+      const previous = readLocal(SESSION_KEY);
 
-      localStorage.setItem(testKey, "1");
-      localStorage.removeItem(testKey);
+      // Только подсказки в полях, не вход.
+      if (typeof previous?.name === "string") {
+        $("name").value = previous.name;
+      }
 
-      ready = true;
-
-      let previous = null;
-
-      try {
-        previous = JSON.parse(
-          localStorage.getItem(
-            SESSION_KEY
-          ) || "null"
-        );
-      } catch (error) {
-        console.error(error);
+      if (
+        typeof previous?.room === "string" &&
+        previous.room.trim()
+      ) {
+        $("room").value = previous.room;
       }
 
       selectedAvatar = AVATARS[previous?.avatar]
         ? previous.avatar
         : "luigi";
 
-      if (
-        typeof previous?.room === "string"
-      ) {
-        $("room").value = previous.room;
-      }
+      ready = true;
 
-      if (
-        previous?.mode === "player" &&
-        typeof previous.name === "string" &&
-        previous.name.trim() &&
-        typeof previous.room === "string" &&
-        previous.room.trim()
-      ) {
-        identity = {
-          name: previous.name,
-          room: previous.room
-        };
-
-        activeRoom = identity.room;
-
-        $("name").value = identity.name;
-
-        loadSound();
-        loadPositions();
-
-        queueSoundState();
-        startUpdates();
-
-        $("status").textContent =
-          pendingTransfer
-            ? "Есть незавершённый перевод. Нажмите «Повторить перевод»."
-            : "Вы вошли как «" +
-              identity.name +
-              "». ОГЭшки сохранены.";
-
-      } else if (
-        previous?.mode === "watch" &&
-        previous.room
-      ) {
-        watching = true;
-        activeRoom = previous.room;
-
-        startUpdates();
-
-        $("status").textContent =
-          "Табло звуковых очков";
-
-      } else {
-        $("status").textContent =
-          "Введите имя и нажмите «Присоединиться».";
-      }
+      $("status").textContent =
+        "Проверьте имя и комнату и нажмите «Присоединиться».";
 
     } catch (error) {
       ready = false;
-
       showError(error);
 
       $("status").textContent =
         "Не удалось подготовить игру.";
-
     } finally {
       controls();
     }
   }
 
-  $("name").addEventListener(
-    "input",
-    controls
-  );
+  $("join").onclick = join;
+  $("start").onclick = start;
+  $("stop").onclick = stopAndBank;
+  $("logout").onclick = leave;
+  $("watch").onclick = toggleWatch;
 
-  $("join").addEventListener(
-    "click",
-    join
-  );
-
-  $("start").addEventListener(
-    "click",
-    start
-  );
-
-  $("stop").addEventListener(
-    "click",
-    stopAndBank
-  );
-
-  $("logout").addEventListener(
-    "click",
-    leave
-  );
-
-  $("watch").addEventListener(
-    "click",
-    toggleWatch
-  );
-
-  $("stickerToggle").addEventListener(
-    "click",
-    () => {
-      setShop(
-        !$("shop").classList.contains(
-          "is-open"
-        )
-      );
-
-      refresh();
-    }
-  );
-
-  $("shopClose").addEventListener(
-    "click",
-    () => setShop(false)
-  );
-
-  $("codeForm").addEventListener(
-    "submit",
-    redeem
-  );
-
-  $("cancelPlacement").addEventListener(
-    "click",
-    cancelPlacement
-  );
-
-  $("placement").addEventListener(
-    "click",
-    event => {
+  for (const input of [$("name"), $("room")]) {
+    input.addEventListener("keydown", event => {
       if (
-        event.target.closest(
-          ".placement-hint"
-        )
+        event.key === "Enter" &&
+        !identity &&
+        !watching
       ) {
-        return;
+        event.preventDefault();
+        join();
       }
+    });
+  }
 
-      if (
-        !identity ||
-        !selectedSticker ||
-        !owned.has(selectedSticker.id)
-      ) {
-        return;
-      }
+  $("stickerToggle").onclick = () => {
+    setShop(!$("shop").classList.contains("is-open"));
+    refresh();
+  };
 
-      placeSticker(
-        selectedSticker,
-        event.clientX - 44,
-        event.clientY - 44
-      );
+  $("shopClose").onclick = () => setShop(false);
+  $("codeForm").onsubmit = redeem;
+  $("cancelPlacement").onclick = cancelPlacement;
+  $("retryLayout").onclick = retryLayout;
 
+  $("placement").onclick = event => {
+    if (event.target.closest(".placement-hint")) return;
+
+    if (
+      busy ||
+      !identity ||
+      !selectedSticker ||
+      !owned.has(selectedSticker.id)
+    ) return;
+
+    placeSticker(
+      selectedSticker,
+      event.clientX - 44,
+      event.clientY - 44
+    );
+
+    cancelPlacement();
+  };
+
+  $("clearStickers").onclick = () => {
+    if (!identity || busy || !layoutKnown) return;
+
+    $("stickerLayer").replaceChildren();
+    changedLayout();
+
+    shopMessage(
+      "Размещённые стикеры убраны. Покупки сохранены."
+    );
+  };
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
       cancelPlacement();
+      setShop(false);
     }
-  );
+  });
 
-  $("clearStickers").addEventListener(
-    "click",
-    () => {
-      if (!identity) return;
+  document.addEventListener("pointerdown", event => {
+    if (event.target.closest(".placed-sticker")) return;
 
-      $("stickerLayer").replaceChildren();
+    document.querySelectorAll(".placed-sticker.selected")
+      .forEach(item => item.classList.remove("selected"));
+  });
 
-      savePositions();
-
-      shopMessage(
-        "Размещённые стикеры убраны. Покупки сохранены."
+  window.addEventListener("resize", () => {
+    for (const element of $("stickerLayer").children) {
+      moveSticker(
+        element,
+        parseFloat(element.style.left) || 0,
+        parseFloat(element.style.top) || 0
       );
     }
-  );
+  });
 
-  document.addEventListener(
-    "keydown",
-    event => {
-      if (event.key === "Escape") {
-        cancelPlacement();
-        setShop(false);
+  window.addEventListener("beforeunload", event => {
+    if (layoutDirty || running || pendingTransfer) {
+      event.preventDefault();
+      event.returnValue = "";
+    }
+  });
+
+  window.addEventListener("pagehide", () => {
+    if (identity) {
+      try {
+        saveSound();
+      } catch (error) {
+        console.error(error);
       }
     }
-  );
 
-  document.addEventListener(
-    "pointerdown",
-    event => {
-      if (
-        event.target.closest(
-          ".placed-sticker"
-        )
-      ) {
-        return;
-      }
+    stopMicrophone();
+    clearTimeout(stateTimer);
 
-      document.querySelectorAll(
-        ".placed-sticker.selected"
-      ).forEach(item => {
-        item.classList.remove("selected");
-      });
+    if (db) stopUpdates();
+
+    // Расположение сохраняется после каждого действия,
+    // а не только при закрытии страницы.
+  });
+
+  window.addEventListener("pageshow", event => {
+    if (event.persisted && ready && activeRoom) {
+      queueSoundState();
+      startUpdates();
+      controls();
     }
-  );
-
-  window.addEventListener(
-    "resize",
-    () => {
-      for (
-        const element of
-        $("stickerLayer").children
-      ) {
-        moveSticker(
-          element,
-          parseFloat(element.style.left) || 0,
-          parseFloat(element.style.top) || 0
-        );
-      }
-    }
-  );
-
-  window.addEventListener(
-    "pagehide",
-    () => {
-      savePositions();
-
-      if (identity) {
-        try {
-          saveSound();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      stopMicrophone();
-
-      clearTimeout(stateTimer);
-
-      if (db) stopUpdates();
-
-      // Закрытие страницы не переводит очки.
-      // Перевод выполняется кнопкой «Стоп».
-    }
-  );
-
-  window.addEventListener(
-    "pageshow",
-    event => {
-      if (
-        event.persisted &&
-        ready &&
-        activeRoom
-      ) {
-        queueSoundState();
-        startUpdates();
-        controls();
-      }
-    }
-  );
+  });
 
   renderChoices();
   buildShop();
   init();
 })();
 </script>
+
 </body>
 </html>
