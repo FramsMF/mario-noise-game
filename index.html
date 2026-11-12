@@ -3,441 +3,737 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Mario Party</title>
 
 <style>
-* { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
 
-:root {
-  --ink: #064967;
-  --track: #9bd8e4;
-}
+  :root {
+    --ink: #064967;
+    --track: #9bd8e4;
+  }
 
-body {
-  margin: 0;
-  background: #fff;
-  color: var(--ink);
-  font-family: Arial, Helvetica, sans-serif;
-}
+  body {
+    margin: 0;
+    background: #fff;
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+  }
 
-button, input { font: inherit; }
-button { cursor: pointer; }
-button:disabled { cursor: not-allowed; opacity: .5; }
-input:disabled { opacity: .7; }
-[hidden] { display: none !important; }
+  button,
+  input {
+    font: inherit;
+  }
 
-.game { padding: 16px 12px 90px; }
+  button {
+    cursor: pointer;
+  }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  max-width: 450px;
-  margin: 0 auto 18px;
-  padding: 8px 0;
-  background: white;
-}
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-.action {
-  padding: 12px;
-  border: 0;
-  border-radius: 10px;
-  background: #279e45;
-  color: white;
-  font-weight: 700;
-}
+  input:disabled {
+    opacity: 0.7;
+  }
 
-#watch { width: 100%; background: var(--ink); }
-#join { background: #2f7fc4; }
-#stop { background: #dc4b43; }
-#logout { background: #718795; }
+  [hidden] {
+    display: none !important;
+  }
 
-.room-title, .empty, .status, .hint { text-align: center; }
-.room-title { margin: 0 0 16px; }
-.empty { padding: 45px 10px; color: #718795; }
+  .game {
+    padding: 16px 12px 90px;
+  }
 
-.arena { overflow-x: auto; padding-bottom: 10px; }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
 
-.players {
-  display: flex;
-  justify-content: center;
-  gap: 35px;
-  width: max-content;
-  min-width: 100%;
-  margin: 0;
-  padding: 0 10px;
-  list-style: none;
-}
+    max-width: 450px;
+    margin: 0 auto 18px;
+    padding: 8px 0;
 
-.player { width: 174px; flex: 0 0 174px; text-align: center; }
+    background: #fff;
+  }
 
-.score {
-  height: 48px;
-  font-size: 40px;
-  line-height: 44px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
+  .action {
+    padding: 12px;
 
-.stage { position: relative; height: 360px; }
+    border: 0;
+    border-radius: 10px;
 
-.track {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 94px;
-  height: 280px;
-  padding: 7px;
-  transform: translateX(-50%);
-  background: var(--track);
-}
+    background: #279e45;
+    color: #fff;
 
-.track-inner { position: relative; height: 100%; }
+    font-weight: 700;
+  }
 
-.fill {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--color);
-  transition: height .25s ease;
-}
+  #watch {
+    width: 100%;
+    background: var(--ink);
+  }
 
-.avatar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 174px;
-  height: 202px;
-  transform-origin: center bottom;
-}
+  #join {
+    background: #2f7fc4;
+  }
 
-.avatar img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-}
+  #stop {
+    background: #dc4b43;
+  }
 
-.avatar.is-speaking { animation: speaking .65s ease-in-out infinite; }
+  #logout {
+    background: #718795;
+  }
 
-@keyframes speaking {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  35% { transform: translateY(-2px) rotate(-.5deg); }
-  70% { transform: translateY(-1px) rotate(.5deg); }
-}
+  .room-title,
+  .empty,
+  .status,
+  .hint {
+    text-align: center;
+  }
 
-.name {
-  margin-top: 7px;
-  overflow: hidden;
-  font-size: 32px;
-  line-height: 42px;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  .room-title {
+    margin: 0 0 16px;
+    font-size: 14px;
+  }
 
-.panel {
-  width: min(100%, 450px);
-  margin: 24px auto 0;
-  padding: 18px;
-  border: 1px solid #dce8ee;
-  border-radius: 16px;
-  background: #f5fafc;
-}
+  .empty {
+    padding: 45px 10px;
+    color: #718795;
+  }
 
-.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-label, .label { display: block; font-size: 13px; font-weight: 700; }
+  .arena {
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
 
-input {
-  width: 100%;
-  margin-top: 6px;
-  padding: 11px;
-  border: 1px solid #c8dce6;
-  border-radius: 9px;
-  background: white;
-  color: var(--ink);
-}
+  .players {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 35px;
 
-input:focus { outline: 2px solid #9bd8e4; }
+    width: max-content;
+    min-width: 100%;
 
-.label { margin: 18px 0 8px; }
-.choices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    margin: 0;
+    padding: 0 10px;
 
-.choice {
-  padding: 7px 4px;
-  border: 3px solid transparent;
-  border-radius: 12px;
-  background: white;
-  color: var(--ink);
-}
+    list-style: none;
+  }
 
-.choice[aria-pressed="true"] { border-color: var(--ink); background: #e7f5fc; }
-.choice img { display: block; width: 100%; height: 85px; object-fit: contain; }
-.choice span { display: block; margin-top: 5px; font-size: 12px; }
+  .player {
+    flex: 0 0 174px;
+    width: 174px;
+    text-align: center;
+  }
 
-.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.actions button { flex: 1; }
+  .score {
+    height: 48px;
 
-.status { font-size: 13px; }
-.hint { color: #718795; font-size: 12px; line-height: 1.5; }
-.error { color: #bd3030; font-size: 13px; overflow-wrap: anywhere; }
+    font-size: 40px;
+    line-height: 44px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
 
-.meter {
-  height: 8px;
-  margin-top: 12px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: #dce8ee;
-}
+  .score-caption {
+    margin: 0 0 7px;
+    color: #718795;
+    font-size: 12px;
+  }
 
-.meter-fill { width: 0; height: 100%; background: #38b65a; }
+  .stage {
+    position: relative;
+    height: 360px;
+  }
 
-/* Магазин */
+  .track {
+    position: absolute;
+    top: 0;
+    left: 50%;
 
-.sticker-toggle {
-  position: fixed;
-  right: 14px;
-  bottom: 20px;
-  z-index: 1200;
-  padding: 12px 18px;
-  border: 0;
-  border-radius: 14px;
-  background: var(--ink);
-  color: white;
-  font-weight: 700;
-}
+    width: 94px;
+    height: 280px;
+    padding: 7px;
 
-.shop {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1300;
-  width: min(330px, 92vw);
-  padding: 20px 16px;
-  overflow-y: auto;
-  border-left: 1px solid #dce8ee;
-  background: #f5fafc;
-  box-shadow: -8px 0 30px #06496720;
-  transform: translateX(110%);
-  visibility: hidden;
-  transition: transform .25s ease, visibility .25s;
-}
+    transform: translateX(-50%);
+    background: var(--track);
+  }
 
-.shop.is-open { transform: translateX(0); visibility: visible; }
-.shop-header { display: flex; justify-content: space-between; align-items: center; }
-.shop-header h2 { margin: 0; font-size: 21px; }
+  .track-inner {
+    position: relative;
+    height: 100%;
+  }
 
-.close {
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 10px;
-  background: #e2edf2;
-  color: var(--ink);
-  font-size: 25px;
-}
+  .fill {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
 
-.code-form { margin-top: 18px; }
+    height: 0;
+    background: var(--color);
+    transition: height 250ms ease;
+  }
 
-.balance {
-  margin: 16px 0;
-  padding: 13px;
-  border: 1px solid #c8dce6;
-  border-radius: 12px;
-  background: white;
-  font-size: 18px;
-  font-weight: 700;
-}
+  .avatar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
 
-.shop-message {
-  min-height: 34px;
-  margin: 10px 0;
-  font-size: 13px;
-  line-height: 1.4;
-}
+    width: 174px;
+    height: 202px;
 
-.shop-message.bad { color: #bd3030; }
-.shop-message.good { color: #23883c; }
+    transform-origin: center bottom;
+  }
 
-.sticker-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(4, 130px);
-  gap: 10px;
-}
+  .avatar img {
+    position: absolute;
+    inset: 0;
 
-.sticker-cell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid #dce8ee;
-  border-radius: 14px;
-  background: white;
-  color: var(--ink);
-}
+    width: 100%;
+    height: 100%;
 
-.sticker-cell img { width: 100%; height: 85px; object-fit: contain; }
-.sticker-cell.is-locked img { filter: grayscale(1); opacity: .55; }
+    object-fit: contain;
+    object-position: center bottom;
+  }
 
-.sticker-lock {
-  position: absolute;
-  top: 9px;
-  right: 10px;
-  width: 19px;
-  height: 16px;
-  margin-top: 7px;
-  border-radius: 3px;
-  background: #59636d;
-}
+  .avatar.is-speaking {
+    animation: speaking 650ms ease-in-out infinite;
+  }
 
-.sticker-lock::before {
-  content: "";
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  left: 4px;
-  top: -8px;
-  border: 3px solid #59636d;
-  border-bottom: 0;
-  border-radius: 8px 8px 0 0;
-}
+  @keyframes speaking {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0);
+    }
 
-.sticker-price { margin-top: 5px; font-size: 12px; font-weight: 700; }
-.sticker-empty { border-style: dashed; background: transparent; }
-.sticker-cell.denied { animation: denied .4s ease; }
+    35% {
+      transform: translateY(-2px) rotate(-0.5deg);
+    }
 
-@keyframes denied {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); background: #ffe1e1; border-color: #dc4b43; }
-  40%, 80% { transform: translateX(5px); background: #ffe1e1; border-color: #dc4b43; }
-}
+    70% {
+      transform: translateY(-1px) rotate(0.5deg);
+    }
+  }
 
-.clear-stickers {
-  width: 100%;
-  margin-top: 16px;
-  padding: 11px;
-  border: 1px solid #c8dce6;
-  border-radius: 10px;
-  background: white;
-  color: var(--ink);
-}
+  .name {
+    margin-top: 7px;
+    overflow: hidden;
 
-/* Размещённые стикеры */
+    font-size: 32px;
+    line-height: 42px;
+    font-weight: 800;
 
-.sticker-layer { position: fixed; inset: 0; z-index: 1100; pointer-events: none; }
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-.placed-sticker {
-  position: absolute;
-  width: 88px;
-  height: 88px;
-  pointer-events: auto;
-  touch-action: none;
-  user-select: none;
-  cursor: grab;
-}
+  .panel {
+    width: min(100%, 450px);
+    margin: 24px auto 0;
+    padding: 18px;
 
-.placed-sticker img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-}
+    border: 1px solid #dce8ee;
+    border-radius: 16px;
 
-.remove-sticker {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  display: none;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 1px solid #dce8ee;
-  border-radius: 50%;
-  background: white;
-  color: #bd3030;
-  font-size: 19px;
-}
+    background: #f5fafc;
+  }
 
-.placed-sticker:hover .remove-sticker,
-.placed-sticker.selected .remove-sticker,
-.placed-sticker:focus-within .remove-sticker { display: block; }
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
 
-.placement {
-  position: fixed;
-  inset: 0;
-  z-index: 1400;
-  cursor: crosshair;
-  touch-action: none;
-}
+  label,
+  .label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+  }
 
-.placement-hint {
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  width: max-content;
-  max-width: calc(100% - 24px);
-  padding: 12px;
-  transform: translateX(-50%);
-  border: 1px solid #c8dce6;
-  border-radius: 12px;
-  background: white;
-  font-size: 14px;
-}
+  input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px;
 
-.placement-hint button {
-  margin-left: 8px;
-  padding: 5px 8px;
-  border: 0;
-  border-radius: 6px;
-  background: #e2edf2;
-  color: var(--ink);
-}
+    border: 1px solid #c8dce6;
+    border-radius: 9px;
 
-@media(max-width: 420px) {
-  .players { justify-content: flex-start; gap: 16px; }
-  .fields { grid-template-columns: 1fr; }
-  .choices { grid-template-columns: repeat(2, 1fr); }
-}
+    background: #fff;
+    color: var(--ink);
+  }
 
-@media(prefers-reduced-motion: reduce) {
-  .avatar.is-speaking, .sticker-cell.denied { animation: none; }
-  .shop, .fill { transition: none; }
-}
+  input:focus {
+    outline: 2px solid #9bd8e4;
+  }
+
+  .label {
+    margin: 18px 0 8px;
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .choice {
+    padding: 7px 4px;
+
+    border: 3px solid transparent;
+    border-radius: 12px;
+
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .choice[aria-pressed="true"] {
+    border-color: var(--ink);
+    background: #e7f5fc;
+  }
+
+  .choice img {
+    display: block;
+    width: 100%;
+    height: 85px;
+    object-fit: contain;
+  }
+
+  .choice span {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+
+  .status {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .hint {
+    color: #718795;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .error {
+    color: #bd3030;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  .meter {
+    height: 8px;
+    margin-top: 12px;
+    overflow: hidden;
+
+    border-radius: 99px;
+    background: #dce8ee;
+  }
+
+  .meter-fill {
+    width: 0;
+    height: 100%;
+    background: #38b65a;
+  }
+
+  /* Панель магазина */
+
+  .sticker-toggle {
+    position: fixed;
+    right: 14px;
+    bottom: 20px;
+    z-index: 1200;
+
+    padding: 12px 18px;
+
+    border: 0;
+    border-radius: 14px;
+
+    background: var(--ink);
+    color: #fff;
+
+    font-weight: 700;
+  }
+
+  .shop {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1300;
+
+    width: min(330px, 92vw);
+    padding: 20px 16px;
+    overflow-y: auto;
+
+    border-left: 1px solid #dce8ee;
+
+    background: #f5fafc;
+    box-shadow: -8px 0 30px #06496720;
+
+    transform: translateX(110%);
+    visibility: hidden;
+
+    transition:
+      transform 250ms ease,
+      visibility 250ms;
+  }
+
+  .shop.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .shop-header h2 {
+    margin: 0;
+    font-size: 21px;
+  }
+
+  .close {
+    width: 36px;
+    height: 36px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #e2edf2;
+    color: var(--ink);
+
+    font-size: 25px;
+  }
+
+  .code-form {
+    margin-top: 18px;
+  }
+
+  .balance {
+    margin: 16px 0;
+    padding: 13px;
+
+    border: 1px solid #c8dce6;
+    border-radius: 12px;
+
+    background: #fff;
+
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .shop-message {
+    min-height: 34px;
+    margin: 10px 0;
+
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .shop-message.bad {
+    color: #bd3030;
+  }
+
+  .shop-message.good {
+    color: #23883c;
+  }
+
+  .sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(4, 130px);
+    gap: 10px;
+  }
+
+  .sticker-cell {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 0;
+    padding: 10px;
+
+    border: 1px solid #dce8ee;
+    border-radius: 14px;
+
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .sticker-cell img {
+    width: 100%;
+    height: 85px;
+    object-fit: contain;
+  }
+
+  .sticker-cell.is-locked img {
+    filter: grayscale(1);
+    opacity: 0.55;
+  }
+
+  .sticker-lock {
+    position: absolute;
+    top: 16px;
+    right: 10px;
+
+    width: 19px;
+    height: 16px;
+
+    border-radius: 3px;
+    background: #59636d;
+  }
+
+  .sticker-lock::before {
+    content: "";
+
+    position: absolute;
+    top: -8px;
+    left: 4px;
+
+    width: 11px;
+    height: 11px;
+
+    border: 3px solid #59636d;
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .sticker-price {
+    margin-top: 5px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .sticker-empty {
+    border-style: dashed;
+    background: transparent;
+  }
+
+  .sticker-cell.denied {
+    animation: denied 400ms ease;
+  }
+
+  @keyframes denied {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    20%,
+    60% {
+      transform: translateX(-5px);
+      background: #ffe1e1;
+      border-color: #dc4b43;
+    }
+
+    40%,
+    80% {
+      transform: translateX(5px);
+      background: #ffe1e1;
+      border-color: #dc4b43;
+    }
+  }
+
+  .clear-stickers {
+    width: 100%;
+    margin-top: 16px;
+    padding: 11px;
+
+    border: 1px solid #c8dce6;
+    border-radius: 10px;
+
+    background: #fff;
+    color: var(--ink);
+  }
+
+  /* Личные стикеры */
+
+  .sticker-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    pointer-events: none;
+  }
+
+  .placed-sticker {
+    position: absolute;
+
+    width: 88px;
+    height: 88px;
+
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+  }
+
+  .placed-sticker img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  .remove-sticker {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+
+    display: none;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+
+    border: 1px solid #dce8ee;
+    border-radius: 50%;
+
+    background: #fff;
+    color: #bd3030;
+
+    font-size: 19px;
+  }
+
+  .placed-sticker:hover .remove-sticker,
+  .placed-sticker.selected .remove-sticker,
+  .placed-sticker:focus-within .remove-sticker {
+    display: block;
+  }
+
+  .placement {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .placement-hint {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+
+    width: max-content;
+    max-width: calc(100% - 24px);
+    padding: 12px;
+
+    transform: translateX(-50%);
+
+    border: 1px solid #c8dce6;
+    border-radius: 12px;
+
+    background: #fff;
+    font-size: 14px;
+  }
+
+  .placement-hint button {
+    margin-left: 8px;
+    padding: 5px 8px;
+
+    border: 0;
+    border-radius: 6px;
+
+    background: #e2edf2;
+    color: var(--ink);
+  }
+
+  @media (max-width: 420px) {
+    .players {
+      justify-content: flex-start;
+      gap: 16px;
+    }
+
+    .fields {
+      grid-template-columns: 1fr;
+    }
+
+    .choices {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .avatar.is-speaking,
+    .sticker-cell.denied {
+      animation: none;
+    }
+
+    .shop,
+    .fill {
+      transition: none;
+    }
+  }
 </style>
 </head>
 
 <body>
 <main class="game">
+
   <div class="topbar">
-    <button id="watch" class="action" disabled>
+    <button id="watch" class="action" type="button" disabled>
       Показать очки игроков
     </button>
   </div>
 
   <p id="roomTitle" class="room-title" hidden></p>
 
-  <section class="arena" aria-label="Игроки">
+  <section class="arena" aria-label="Звуковые очки игроков">
     <ul id="players" class="players"></ul>
-    <p id="empty" class="empty">Присоединитесь к комнате или откройте табло</p>
+
+    <p id="empty" class="empty">
+      Присоединитесь к комнате или откройте табло
+    </p>
   </section>
 
   <section class="panel">
+
     <div class="fields">
       <label id="nameField">
         Имя игрока
-        <input id="name" maxlength="30" placeholder="Маша">
+        <input
+          id="name"
+          maxlength="30"
+          placeholder="Маша"
+          autocomplete="off"
+        >
       </label>
+
       <label>
         Комната
-        <input id="room" maxlength="50" value="party-1">
+        <input
+          id="room"
+          maxlength="50"
+          value="party-1"
+          autocomplete="off"
+        >
       </label>
     </div>
 
@@ -447,69 +743,114 @@ input:focus { outline: 2px solid #9bd8e4; }
     </div>
 
     <div id="actions" class="actions">
-      <button id="join" class="action" disabled>Присоединиться</button>
-      <button id="start" class="action" disabled>Начать</button>
-      <button id="stop" class="action" disabled>Стоп</button>
-      <button id="logout" class="action" hidden>Выйти</button>
+      <button id="join" class="action" type="button" disabled>
+        Присоединиться
+      </button>
+
+      <button id="start" class="action" type="button" disabled>
+        Начать
+      </button>
+
+      <button id="stop" class="action" type="button" disabled>
+        Стоп
+      </button>
+
+      <button id="logout" class="action" type="button" hidden>
+        Выйти
+      </button>
     </div>
 
     <p id="status" class="status">Подключение…</p>
+
     <div id="meterSection" class="meter">
       <div id="meter" class="meter-fill"></div>
     </div>
+
     <p class="hint">
-      Один громкий всплеск — одно очко.
-      Общий счёт сохраняется после закрытия страницы.
+      Один громкий всплеск — одно звуковое очко.
+      Нажмите «Стоп», чтобы перевести результат в ОГЭшки.
+      Курс: 1 очко = 1 ОГЭшка.
     </p>
+
     <p id="error" class="error" role="alert"></p>
   </section>
+
 </main>
 
 <div id="stickerLayer" class="sticker-layer"></div>
 
-<button id="stickerToggle" class="sticker-toggle"
-  aria-controls="shop" aria-expanded="false" disabled>
+<button
+  id="stickerToggle"
+  class="sticker-toggle"
+  type="button"
+  aria-controls="shop"
+  aria-expanded="false"
+  disabled
+>
   Стикеры
 </button>
 
-<aside id="shop" class="shop" aria-label="Магазин стикеров"
-  aria-hidden="true" inert>
+<aside
+  id="shop"
+  class="shop"
+  aria-label="Магазин стикеров"
+  aria-hidden="true"
+  inert
+>
   <div class="shop-header">
     <h2>Стикеры</h2>
-    <button id="shopClose" class="close" aria-label="Закрыть">×</button>
+
+    <button
+      id="shopClose"
+      class="close"
+      type="button"
+      aria-label="Закрыть"
+    >×</button>
   </div>
 
   <form id="codeForm" class="code-form">
     <label>
       Код из «Балломании»
-      <input id="codeInput" placeholder="Введите код и нажмите Enter"
-        autocomplete="off" spellcheck="false" enterkeyhint="send">
+      <input
+        id="codeInput"
+        placeholder="Введите код и нажмите Enter"
+        autocomplete="off"
+        spellcheck="false"
+        enterkeyhint="send"
+      >
     </label>
   </form>
 
   <div class="balance">
-    Ваши очки: <span id="balance">0</span>
+    ОГЭшки: <span id="balance">0</span>
   </div>
 
   <p id="shopMessage" class="shop-message" role="status"></p>
 
   <div id="stickerGrid" class="sticker-grid"></div>
 
-  <button id="clearStickers" class="clear-stickers">
+  <button
+    id="clearStickers"
+    class="clear-stickers"
+    type="button"
+  >
     Убрать размещённые стикеры
   </button>
 
   <p class="hint">
-    Первое нажатие покупает стикер.
+    Первое нажатие покупает стикер за ОГЭшки.
     Следующее позволяет разместить его.
-    Купленные стикеры повторно оплачивать не нужно.
+    Повторная оплата не нужна.
   </p>
 </aside>
 
 <div id="placement" class="placement" hidden>
   <div class="placement-hint">
     Нажмите, куда поставить стикер
-    <button id="cancelPlacement">Отмена</button>
+
+    <button id="cancelPlacement" type="button">
+      Отмена
+    </button>
   </div>
 </div>
 
@@ -519,30 +860,45 @@ input:focus { outline: 2px solid #9bd8e4; }
 (() => {
   "use strict";
 
-  const URL = "https://juchryyubxkuapnaqelj.supabase.co";
-  const KEY = "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
+  const SUPABASE_URL =
+    "https://juchryyubxkuapnaqelj.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_l75mr1kAzXwX6aPUEvruEA_GfmLKIE-";
+
   const SESSION_KEY = "noise-party-player-v2";
 
   const AVATARS = {
     luigi: {
-      label: "Луиджи", color: "#cbf477",
-      closed: "./luigi2.png", open: "./luigi.png"
+      label: "Луиджи",
+      color: "#cbf477",
+      closed: "./luigi2.png",
+      open: "./luigi.png"
     },
+
     mario: {
-      label: "Марио", color: "#e69a50",
-      closed: "./mario2.png", open: "./mario.png"
+      label: "Марио",
+      color: "#e69a50",
+      closed: "./mario2.png",
+      open: "./mario.png"
     },
+
     peach: {
-      label: "Пич", color: "#f5acd4",
-      closed: "./peach2.png", open: "./peach.png"
+      label: "Пич",
+      color: "#f5acd4",
+      closed: "./peach2.png",
+      open: "./peach.png"
     },
+
     yoshi: {
-      label: "Йоши", color: "#79d8a0",
-      closed: "./Yoshi2.png", open: "./Yoshi.png"
+      label: "Йоши",
+      color: "#79d8a0",
+      closed: "./Yoshi2.png",
+      open: "./Yoshi.png"
     }
   };
 
-  // Цены должны совпадать с функцией mp_buy_sticker в SQL.
+  // Цены должны совпадать с SQL-функцией mp_buy_sticker.
   const STICKERS = [
     { id: 1, image: "./1.png", price: 50 },
     { id: 2, image: "./2.png", price: 100 },
@@ -552,143 +908,290 @@ input:focus { outline: 2px solid #9bd8e4; }
 
   const $ = id => document.getElementById(id);
 
-  let db;
+  let db = null;
   let ready = false;
   let busy = false;
+
   let identity = null;
   let watching = false;
   let activeRoom = "";
   let selectedAvatar = "luigi";
+
   let balance = 0;
   let owned = new Set();
+
+  let soundPoints = 0;
+  let pendingTransfer = null;
+
   let running = false;
   let stream = null;
   let context = null;
   let analyser = null;
   let frame = null;
+
   let loud = false;
   let silentSince = null;
   let lastPoint = -Infinity;
-  let pointBusy = false;
-  let soundPublishing = false;
-  let publishedSound = false;
-  let soundRetry = null;
+
   let channel = null;
   let poll = null;
+  let generation = 0;
+
   let refreshBusy = false;
   let refreshAgain = false;
-  let generation = 0;
+
+  let statePromise = null;
+  let stateDirty = false;
+  let stateTimer = null;
+
   let selectedSticker = null;
   let stickerZ = 1;
 
   const cards = new Map();
   const shopButtons = new Map();
 
-  function errorMessage(error) {
+  function showError(error) {
     console.error(error);
-    $("error").textContent = error?.message || String(error);
+
+    $("error").textContent =
+      error?.message || String(error);
   }
 
   function shopMessage(text, bad = false) {
     $("shopMessage").textContent = text;
-    $("shopMessage").className = "shop-message " + (bad ? "bad" : "good");
+
+    $("shopMessage").className =
+      "shop-message " + (bad ? "bad" : "good");
   }
 
-  function saveSession() {
-    localStorage.setItem(SESSION_KEY, JSON.stringify({
-      mode: watching ? "watch" : identity ? "player" : "setup",
-      name: identity?.name || "",
-      room: activeRoom || $("room").value.trim() || "party-1",
-      avatar: selectedAvatar
-    }));
-  }
+  async function rpc(name, args) {
+    const { data, error } = await db.rpc(name, args);
 
-  async function rpc(name, arguments_) {
-    const { data, error } = await db.rpc(name, arguments_);
     if (error) throw error;
+
     return data;
   }
 
   function playerArgs() {
-    return { p_room: identity.room, p_name: identity.name };
+    return {
+      p_room: identity.room,
+      p_name: identity.name
+    };
+  }
+
+  function localKey(prefix) {
+    return identity
+      ? prefix + JSON.stringify([
+          identity.room,
+          identity.name
+        ])
+      : null;
+  }
+
+  function saveSession() {
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        mode: watching
+          ? "watch"
+          : identity
+            ? "player"
+            : "setup",
+
+        name: identity?.name || "",
+
+        room:
+          activeRoom ||
+          $("room").value.trim() ||
+          "party-1",
+
+        avatar: selectedAvatar
+      })
+    );
+  }
+
+  function saveSound() {
+    if (!identity) return;
+
+    localStorage.setItem(
+      localKey("mp-sound-v2:"),
+      JSON.stringify({
+        points: soundPoints,
+        pending: pendingTransfer
+      })
+    );
+  }
+
+  function loadSound() {
+    soundPoints = 0;
+    pendingTransfer = null;
+
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(
+          localKey("mp-sound-v2:")
+        ) || "null"
+      );
+
+      soundPoints = Math.max(
+        0,
+        Math.floor(Number(saved?.points) || 0)
+      );
+
+      if (
+        typeof saved?.pending?.id === "string" &&
+        Number.isInteger(saved.pending.points) &&
+        saved.pending.points > 0
+      ) {
+        pendingTransfer = saved.pending;
+        soundPoints = saved.pending.points;
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   function setBalance(value) {
     balance = Number(value) || 0;
+
     $("balance").textContent = String(balance);
-    const card = identity ? cards.get(identity.name) : null;
-    if (card) {
-      card.score.textContent = String(balance);
-      card.fill.style.height =
-        Math.max(0, Math.min(100, balance)) + "%";
-    }
+
+    // ОГЭшки не меняют шкалу звука.
+  }
+
+  function paintOwnSound() {
+    const card = identity
+      ? cards.get(identity.name)
+      : null;
+
+    if (!card) return;
+
+    card.score.textContent = String(soundPoints);
+
+    card.fill.style.height =
+      Math.max(
+        0,
+        Math.min(100, soundPoints)
+      ) + "%";
+
+    setMouth(card, loud);
   }
 
   function controls() {
     const logged = Boolean(identity) && !watching;
+
     $("nameField").hidden = watching;
     $("avatarSection").hidden = watching;
     $("actions").hidden = watching;
     $("meterSection").hidden = watching;
 
-    $("name").disabled = !ready || busy || logged;
-    $("room").disabled = !ready || busy || logged || watching;
+    $("name").disabled =
+      !ready || busy || logged;
+
+    $("room").disabled =
+      !ready || busy || logged || watching;
 
     $("join").hidden = logged;
-    $("join").disabled = !ready || busy || !$("name").value.trim();
-    $("start").disabled = !ready || busy || !logged || running;
-    $("stop").disabled = !running || busy;
+
+    $("join").disabled =
+      !ready ||
+      busy ||
+      !$("name").value.trim();
+
+    $("start").disabled =
+      !ready ||
+      busy ||
+      !logged ||
+      running ||
+      Boolean(pendingTransfer);
+
+    $("stop").disabled =
+      !logged ||
+      busy ||
+      (!running && soundPoints === 0);
+
+    $("stop").textContent = pendingTransfer
+      ? "Повторить перевод"
+      : "Стоп";
+
     $("logout").hidden = !logged;
     $("logout").disabled = busy || running;
-    $("watch").disabled = !ready || busy || running;
-    $("watch").textContent = watching
-      ? "Вернуться к игре" : "Показать очки игроков";
 
-    $("stickerToggle").disabled = !ready || busy || !logged;
+    $("watch").disabled =
+      !ready || busy || running;
+
+    $("watch").textContent = watching
+      ? "Вернуться к игре"
+      : "Показать очки игроков";
+
+    $("stickerToggle").disabled =
+      !ready || busy || !logged;
+
     $("codeInput").disabled = busy || !logged;
     $("clearStickers").disabled = busy || !logged;
 
-    document.querySelectorAll(".choice").forEach(button => {
-      button.disabled = !ready || busy || running || logged;
-      button.setAttribute("aria-pressed",
-        String(button.dataset.avatar === selectedAvatar));
-    });
+    document.querySelectorAll(".choice")
+      .forEach(button => {
+        button.disabled =
+          !ready || busy || running || logged;
+
+        button.setAttribute(
+          "aria-pressed",
+          String(
+            button.dataset.avatar === selectedAvatar
+          )
+        );
+      });
 
     for (const button of shopButtons.values()) {
       button.disabled = busy || !logged;
     }
 
     $("roomTitle").hidden = !activeRoom;
-    $("roomTitle").textContent = "Комната: " + activeRoom;
+
+    $("roomTitle").textContent =
+      "Комната: " + activeRoom;
   }
 
   function renderChoices() {
     for (const [id, avatar] of Object.entries(AVATARS)) {
       const button = document.createElement("button");
+
+      button.type = "button";
       button.className = "choice";
       button.dataset.avatar = id;
 
       const image = document.createElement("img");
+
       image.src = avatar.closed;
       image.alt = avatar.label;
 
       const label = document.createElement("span");
+
       label.textContent = avatar.label;
+
       button.append(image, label);
 
-      button.onclick = () => {
+      button.addEventListener("click", () => {
         selectedAvatar = id;
         controls();
-      };
+      });
 
       $("choices").append(button);
     }
   }
 
-  function mouth(card, open) {
-    card.normal.hidden = open && !card.openFailed;
-    card.talking.hidden = !open || card.openFailed;
-    card.avatar.classList.toggle("is-speaking", open);
+  function setMouth(card, open) {
+    card.normal.hidden =
+      open && !card.openFailed;
+
+    card.talking.hidden =
+      !open || card.openFailed;
+
+    card.avatar.classList.toggle(
+      "is-speaking",
+      open
+    );
   }
 
   function createCard(player) {
@@ -697,6 +1200,10 @@ input:focus { outline: 2px solid #9bd8e4; }
 
     const score = document.createElement("div");
     score.className = "score";
+
+    const caption = document.createElement("p");
+    caption.className = "score-caption";
+    caption.textContent = "Очки за звук";
 
     const stage = document.createElement("div");
     stage.className = "stage";
@@ -715,6 +1222,7 @@ input:focus { outline: 2px solid #9bd8e4; }
 
     const normal = document.createElement("img");
     const talking = document.createElement("img");
+
     talking.hidden = true;
 
     const name = document.createElement("div");
@@ -726,33 +1234,49 @@ input:focus { outline: 2px solid #9bd8e4; }
     track.append(inner);
     avatar.append(normal, talking);
     stage.append(track, avatar);
-    item.append(score, stage, name);
+
+    item.append(
+      score,
+      caption,
+      stage,
+      name
+    );
 
     const card = {
-      item, score, fill, avatar, normal, talking,
-      avatarId: null, openFailed: false
+      item,
+      score,
+      fill,
+      avatar,
+      normal,
+      talking,
+      avatarId: null,
+      openFailed: false
     };
 
-    talking.onerror = () => {
+    talking.addEventListener("error", () => {
       card.openFailed = true;
       talking.hidden = true;
       normal.hidden = false;
-    };
+    });
 
-    normal.onerror = () => {
-      errorMessage(new Error(
-        "Не найдена картинка аватара: " + normal.getAttribute("src")
+    normal.addEventListener("error", () => {
+      showError(new Error(
+        "Не найдена картинка: " +
+        normal.getAttribute("src")
       ));
-    };
+    });
 
     return card;
   }
 
   function renderPlayers(players) {
     const sorted = [...players].sort((a, b) =>
-      a.name.localeCompare(b.name, "ru"));
+      a.name.localeCompare(b.name, "ru")
+    );
 
-    const names = new Set(sorted.map(player => player.name));
+    const names = new Set(
+      sorted.map(player => player.name)
+    );
 
     for (const [name, card] of cards) {
       if (!names.has(name)) {
@@ -769,34 +1293,65 @@ input:focus { outline: 2px solid #9bd8e4; }
         cards.set(player.name, card);
       }
 
-      const avatarId = AVATARS[player.avatar] ? player.avatar : "luigi";
+      const avatarId = AVATARS[player.avatar]
+        ? player.avatar
+        : "luigi";
+
       const avatar = AVATARS[avatarId];
 
       if (card.avatarId !== avatarId) {
         card.avatarId = avatarId;
         card.openFailed = false;
+
         card.normal.src = avatar.closed;
         card.talking.src = avatar.open;
+
         card.normal.alt = avatar.label;
         card.talking.alt = avatar.label;
-        card.item.style.setProperty("--color", avatar.color);
+
+        card.item.style.setProperty(
+          "--color",
+          avatar.color
+        );
       }
 
-      const score = Number(player.score) || 0;
-      card.score.textContent = String(score);
-      card.fill.style.height = Math.max(0, Math.min(100, score)) + "%";
+      const own =
+        identity &&
+        !watching &&
+        player.name === identity.name;
 
-      const own = identity && !watching && player.name === identity.name;
-      mouth(card, own ? loud : Boolean(player.is_loud));
+      const points = own
+        ? soundPoints
+        : Number(player.sound_score) || 0;
 
-      const current = $("players").children[index];
+      card.score.textContent = String(points);
+
+      card.fill.style.height =
+        Math.max(
+          0,
+          Math.min(100, points)
+        ) + "%";
+
+      setMouth(
+        card,
+        own ? loud : Boolean(player.is_loud)
+      );
+
+      const current =
+        $("players").children[index];
+
       if (current !== card.item) {
-        $("players").insertBefore(card.item, current || null);
+        $("players").insertBefore(
+          card.item,
+          current || null
+        );
       }
     });
 
     $("empty").hidden = sorted.length > 0;
-    $("empty").textContent = "В этой комнате пока нет игроков";
+
+    $("empty").textContent =
+      "В этой комнате пока нет игроков";
   }
 
   async function refresh() {
@@ -808,13 +1363,18 @@ input:focus { outline: 2px solid #9bd8e4; }
     }
 
     refreshBusy = true;
+
     const version = generation;
     const room = activeRoom;
-    const person = identity ? { ...identity } : null;
+
+    const person = identity
+      ? { ...identity }
+      : null;
 
     try {
-      const { data, error } = await db.from("players")
-        .select("name,score,avatar,is_loud")
+      const { data, error } = await db
+        .from("players")
+        .select("name,avatar,is_loud,sound_score")
         .eq("room", room);
 
       if (error) throw error;
@@ -823,20 +1383,31 @@ input:focus { outline: 2px solid #9bd8e4; }
       renderPlayers(data || []);
 
       if (person && !watching) {
-        const wallet = await rpc("mp_wallet", {
-          p_room: person.room, p_name: person.name
-        });
+        const wallet = await rpc(
+          "mp_wallet",
+          {
+            p_room: person.room,
+            p_name: person.name
+          }
+        );
 
         if (version !== generation) return;
 
         setBalance(wallet.score);
-        owned = new Set((wallet.owned || []).map(Number));
+
+        owned = new Set(
+          (wallet.owned || []).map(Number)
+        );
+
         renderShopState();
       }
     } catch (error) {
-      if (version === generation) errorMessage(error);
+      if (version === generation) {
+        showError(error);
+      }
     } finally {
       refreshBusy = false;
+
       if (refreshAgain) {
         refreshAgain = false;
         refresh();
@@ -846,8 +1417,10 @@ input:focus { outline: 2px solid #9bd8e4; }
 
   function stopUpdates() {
     generation++;
+
     clearInterval(poll);
     poll = null;
+
     if (channel) {
       db.removeChannel(channel);
       channel = null;
@@ -856,172 +1429,256 @@ input:focus { outline: 2px solid #9bd8e4; }
 
   function startUpdates() {
     stopUpdates();
+
     const version = generation;
 
-    channel = db.channel("party-" + crypto.randomUUID())
-      .on("postgres_changes", {
-        event: "*", schema: "public", table: "players"
-      }, () => {
-        if (version === generation) refresh();
-      })
+    channel = db
+      .channel("party-" + crypto.randomUUID())
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "players"
+        },
+        () => {
+          if (version === generation) {
+            refresh();
+          }
+        }
+      )
       .subscribe();
 
-    poll = setInterval(refresh, 5000);
+    poll = setInterval(() => {
+      refresh();
+
+      if (stateDirty && !busy) {
+        flushSoundState().catch(console.error);
+      }
+    }, 5000);
+
     refresh();
+  }
+
+  // Последовательная публикация звукового состояния.
+  // Поле score (кошелёк) здесь не изменяется.
+  function queueSoundState() {
+    if (!identity || watching) return;
+
+    stateDirty = true;
+
+    clearTimeout(stateTimer);
+
+    stateTimer = setTimeout(() => {
+      flushSoundState().catch(console.error);
+    }, 70);
+  }
+
+  function flushSoundState() {
+    clearTimeout(stateTimer);
+
+    if (statePromise) {
+      return statePromise;
+    }
+
+    if (!identity || watching || !db) {
+      return Promise.resolve();
+    }
+
+    statePromise = (async () => {
+      while (stateDirty && identity && !watching) {
+        stateDirty = false;
+
+        const person = { ...identity };
+
+        const { error } = await db
+          .from("players")
+          .update({
+            sound_score: soundPoints,
+            is_loud: loud
+          })
+          .eq("room", person.room)
+          .eq("name", person.name);
+
+        if (error) {
+          stateDirty = true;
+          throw error;
+        }
+      }
+    })().finally(() => {
+      statePromise = null;
+    });
+
+    return statePromise;
+  }
+
+  function setLoud(value) {
+    loud = value;
+
+    paintOwnSound();
+    queueSoundState();
   }
 
   async function join() {
     if (busy || identity || !ready) return;
 
     const name = $("name").value.trim();
-    const room = $("room").value.trim() || "party-1";
+
+    const room =
+      $("room").value.trim() || "party-1";
+
     if (!name) return;
 
     busy = true;
+
     $("error").textContent = "";
     controls();
 
     try {
-      const result = await rpc("mp_join", {
-        p_room: room, p_name: name, p_avatar: selectedAvatar
-      });
+      const result = await rpc(
+        "mp_join",
+        {
+          p_room: room,
+          p_name: name,
+          p_avatar: selectedAvatar
+        }
+      );
 
       identity = { name, room };
       activeRoom = room;
       watching = false;
       owned = new Set();
+
       setBalance(result.score);
+
+      loadSound();
       saveSession();
       loadPositions();
+
+      queueSoundState();
       startUpdates();
 
-      $("status").textContent =
-        "Вы вошли как «" + name + "». Стикеры доступны.";
+      $("status").textContent = pendingTransfer
+        ? "Есть незавершённый перевод. Нажмите «Повторить перевод»."
+        : "Вы вошли как «" + name + "». Можно начинать.";
+
     } catch (error) {
-      errorMessage(error);
+      showError(error);
     } finally {
       busy = false;
       controls();
     }
   }
 
-  async function publishSound() {
-    if (soundPublishing || !identity || watching || !db) return;
-
-    soundPublishing = true;
-    const person = { ...identity };
-
-    try {
-      while (publishedSound !== loud) {
-        const value = loud;
-        const { error } = await db.from("players")
-          .update({ is_loud: value })
-          .eq("room", person.room)
-          .eq("name", person.name);
-
-        if (error) throw error;
-        publishedSound = value;
-      }
-    } catch (error) {
-      console.error(error);
-      clearTimeout(soundRetry);
-      soundRetry = setTimeout(publishSound, 2000);
-    } finally {
-      soundPublishing = false;
-    }
-  }
-
-  function setLoud(value) {
-    loud = value;
-    const card = identity ? cards.get(identity.name) : null;
-    if (card) mouth(card, loud);
-    publishSound();
-  }
-
-  async function addPoint() {
-    if (pointBusy || !identity) return;
-    pointBusy = true;
-
-    try {
-      await rpc("mp_noise_point", playerArgs());
-      await refresh();
-    } catch (error) {
-      errorMessage(error);
-    } finally {
-      pointBusy = false;
-    }
-  }
-
   async function start() {
-    if (busy || running || !identity) return;
+    if (
+      busy ||
+      running ||
+      !identity ||
+      pendingTransfer
+    ) {
+      return;
+    }
 
     busy = true;
+
     controls();
     $("error").textContent = "";
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Микрофон недоступен. Откройте сайт по HTTPS.");
+        throw new Error(
+          "Микрофон недоступен. Откройте сайт по HTTPS."
+        );
       }
 
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: false
-        }
-      });
+      stream = await navigator.mediaDevices
+        .getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
 
-      const AudioClass = window.AudioContext || window.webkitAudioContext;
+      const AudioClass =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if (!AudioClass) {
+        throw new Error(
+          "Браузер не поддерживает обработку звука."
+        );
+      }
+
       context = new AudioClass();
+
       await context.resume();
 
       analyser = context.createAnalyser();
       analyser.fftSize = 1024;
-      context.createMediaStreamSource(stream).connect(analyser);
+
+      context
+        .createMediaStreamSource(stream)
+        .connect(analyser);
 
       running = true;
       silentSince = null;
       lastPoint = -Infinity;
+
       setLoud(false);
 
-      $("status").textContent = "Микрофон включён";
+      $("status").textContent =
+        "Микрофон включён. «Стоп» переведёт очки в ОГЭшки.";
+
       analyse();
+
     } catch (error) {
-      stop();
-      errorMessage(error);
+      stopMicrophone();
+      showError(error);
+
     } finally {
       busy = false;
       controls();
     }
   }
 
-  function stop() {
+  function stopMicrophone() {
     running = false;
+
     cancelAnimationFrame(frame);
     frame = null;
 
-    stream?.getTracks().forEach(track => track.stop());
+    stream?.getTracks().forEach(track => {
+      track.stop();
+    });
+
     stream = null;
 
-    if (context) context.close().catch(console.error);
+    if (context) {
+      context.close().catch(console.error);
+    }
+
     context = null;
     analyser = null;
     silentSince = null;
+    loud = false;
 
-    setLoud(false);
     $("meter").style.width = "0%";
-    $("status").textContent = "Микрофон выключен. Очки сохранены.";
-    controls();
+
+    paintOwnSound();
   }
 
   function analyse() {
-    const data = new Uint8Array(analyser.fftSize);
+    const data = new Uint8Array(
+      analyser.fftSize
+    );
 
     function tick() {
       if (!running || !analyser) return;
 
       analyser.getByteTimeDomainData(data);
+
       let sum = 0;
 
       for (const sample of data) {
@@ -1029,27 +1686,48 @@ input:focus { outline: 2px solid #9bd8e4; }
         sum += value * value;
       }
 
-      const level = Math.min(100,
-        Math.round(Math.sqrt(sum / data.length) * 300));
+      const level = Math.min(
+        100,
+        Math.round(
+          Math.sqrt(sum / data.length) * 300
+        )
+      );
 
       $("meter").style.width = level + "%";
+
       const now = performance.now();
 
       if (level >= 35) {
         silentSince = null;
-        if (!loud) setLoud(true);
+
+        if (!loud) {
+          setLoud(true);
+        }
+
       } else if (loud && level < 25) {
-        if (silentSince === null) silentSince = now;
+        if (silentSince === null) {
+          silentSince = now;
+        }
 
         if (now - silentSince >= 180) {
-          setLoud(false);
+          loud = false;
           silentSince = null;
 
-          if (!pointBusy && now - lastPoint >= 1000) {
+          if (now - lastPoint >= 1000) {
             lastPoint = now;
-            addPoint();
+            soundPoints++;
+
+            try {
+              saveSound();
+            } catch (error) {
+              showError(error);
+            }
           }
+
+          paintOwnSound();
+          queueSoundState();
         }
+
       } else if (loud) {
         silentSince = null;
       }
@@ -1060,60 +1738,193 @@ input:focus { outline: 2px solid #9bd8e4; }
     tick();
   }
 
-  async function leave() {
-    if (running || busy || pointBusy || soundPublishing) {
+  async function stopAndBank() {
+    if (busy || !identity) return;
+
+    busy = true;
+
+    stopMicrophone();
+
+    controls();
+    $("error").textContent = "";
+
+    try {
+      // Закрываем рот и дожидаемся всех предыдущих
+      // записей звукового состояния.
+      stateDirty = true;
+
+      try {
+        await flushSoundState();
+      } catch (error) {
+        console.error(error);
+      }
+
+      clearTimeout(stateTimer);
+
+      if (soundPoints <= 0 && !pendingTransfer) {
+        $("status").textContent =
+          "Микрофон выключен. Звуковых очков пока нет.";
+
+        return;
+      }
+
+      if (!pendingTransfer) {
+        pendingTransfer = {
+          id: crypto.randomUUID(),
+          points: soundPoints
+        };
+      }
+
+      // Сначала сохраняем перевод локально,
+      // затем отправляем его серверу.
+      saveSound();
+
+      const result = await rpc(
+        "mp_bank_noise",
+        {
+          ...playerArgs(),
+          p_points: pendingTransfer.points,
+          p_transfer_id: pendingTransfer.id
+        }
+      );
+
+      const added = pendingTransfer.points;
+
+      soundPoints = 0;
+      pendingTransfer = null;
+
+      saveSound();
+
+      setBalance(result.balance);
+      paintOwnSound();
+
+      queueSoundState();
+
       $("status").textContent =
-        "Остановите микрофон и дождитесь сохранения очков.";
-      return;
+        "Микрофон выключен. Начислено " +
+        added + " ОГЭшек.";
+
+      shopMessage(
+        "За звук начислено +" + added + " ОГЭшек."
+      );
+
+      refresh();
+
+    } catch (error) {
+      showError(error);
+
+      $("status").textContent =
+        "Не удалось завершить перевод. " +
+        "Нажмите «Повторить перевод». " +
+        "Повторного начисления одного перевода не будет.";
+
+    } finally {
+      busy = false;
+      controls();
+    }
+  }
+
+  async function leave() {
+    if (busy || running) return false;
+
+    if (soundPoints > 0 || pendingTransfer) {
+      $("status").textContent =
+        "Сначала нажмите «Стоп», чтобы перевести очки в ОГЭшки.";
+
+      return false;
     }
 
-    stopUpdates();
-    clearTimeout(soundRetry);
-    identity = null;
-    activeRoom = "";
-    watching = false;
-    loud = false;
-    publishedSound = false;
-    owned = new Set();
-    cards.clear();
-    $("players").replaceChildren();
-    $("empty").hidden = false;
-    $("empty").textContent = "Введите имя и присоединитесь к комнате";
-    $("stickerLayer").replaceChildren();
-    setShop(false);
-    cancelPlacement();
-    localStorage.removeItem(SESSION_KEY);
-    setBalance(0);
-    renderShopState();
-    $("status").textContent = "Вы вышли. Очки и покупки сохранены.";
+    busy = true;
     controls();
+
+    try {
+      stateDirty = true;
+
+      await flushSoundState();
+
+      stopUpdates();
+
+      identity = null;
+      activeRoom = "";
+      watching = false;
+      loud = false;
+
+      stateDirty = false;
+      clearTimeout(stateTimer);
+
+      owned = new Set();
+
+      cards.clear();
+
+      $("players").replaceChildren();
+      $("empty").hidden = false;
+
+      $("empty").textContent =
+        "Введите имя и присоединитесь к комнате";
+
+      $("stickerLayer").replaceChildren();
+
+      setShop(false);
+      cancelPlacement();
+
+      localStorage.removeItem(SESSION_KEY);
+
+      setBalance(0);
+      renderShopState();
+
+      $("status").textContent =
+        "Вы вышли. ОГЭшки и покупки сохранены.";
+
+      return true;
+
+    } catch (error) {
+      showError(error);
+
+      return false;
+
+    } finally {
+      busy = false;
+      controls();
+    }
   }
 
   async function toggleWatch() {
     if (busy || running) return;
 
     if (identity) {
-      await leave();
-      if (identity) return;
+      const left = await leave();
+
+      if (!left) return;
     }
 
     if (watching) {
       stopUpdates();
+
       watching = false;
       activeRoom = "";
+
       localStorage.removeItem(SESSION_KEY);
+
       cards.clear();
       $("players").replaceChildren();
+
       $("empty").hidden = false;
+
+      $("empty").textContent =
+        "Введите имя и присоединитесь к комнате";
+
     } else {
       watching = true;
-      activeRoom = $("room").value.trim() || "party-1";
+
+      activeRoom =
+        $("room").value.trim() || "party-1";
+
       saveSession();
       startUpdates();
     }
 
     $("status").textContent = watching
-      ? "Табло комнаты. Микрофон выключен."
+      ? "Табло звуковых очков. ОГЭшки здесь не отображаются."
       : "Введите имя и присоединитесь к комнате.";
 
     controls();
@@ -1121,10 +1932,23 @@ input:focus { outline: 2px solid #9bd8e4; }
 
   function setShop(open) {
     if (open && (!identity || watching)) return;
-    $("shop").classList.toggle("is-open", open);
-    $("shop").setAttribute("aria-hidden", String(!open));
+
+    $("shop").classList.toggle(
+      "is-open",
+      open
+    );
+
+    $("shop").setAttribute(
+      "aria-hidden",
+      String(!open)
+    );
+
     $("shop").inert = !open;
-    $("stickerToggle").setAttribute("aria-expanded", String(open));
+
+    $("stickerToggle").setAttribute(
+      "aria-expanded",
+      String(open)
+    );
   }
 
   function buildShop() {
@@ -1133,32 +1957,48 @@ input:focus { outline: 2px solid #9bd8e4; }
 
       if (!sticker) {
         const empty = document.createElement("div");
-        empty.className = "sticker-cell sticker-empty";
-        empty.setAttribute("aria-hidden", "true");
+
+        empty.className =
+          "sticker-cell sticker-empty";
+
+        empty.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
         $("stickerGrid").append(empty);
+
         continue;
       }
 
       const button = document.createElement("button");
-      button.className = "sticker-cell";
+
       button.type = "button";
+      button.className = "sticker-cell";
 
       const image = document.createElement("img");
+
       image.src = sticker.image;
       image.alt = "Стикер " + sticker.id;
       image.draggable = false;
 
       const lock = document.createElement("span");
+
       lock.className = "sticker-lock";
       lock.setAttribute("aria-hidden", "true");
 
       const price = document.createElement("span");
+
       price.className = "sticker-price";
 
       button.append(image, lock, price);
-      button.onclick = () => stickerClick(sticker, button);
+
+      button.addEventListener("click", () => {
+        stickerClick(sticker, button);
+      });
 
       shopButtons.set(sticker.id, button);
+
       $("stickerGrid").append(button);
     }
 
@@ -1168,20 +2008,37 @@ input:focus { outline: 2px solid #9bd8e4; }
   function renderShopState() {
     for (const sticker of STICKERS) {
       const button = shopButtons.get(sticker.id);
+
       if (!button) continue;
 
       const purchased = owned.has(sticker.id);
-      button.classList.toggle("is-locked", !purchased);
-      button.querySelector(".sticker-lock").hidden = purchased;
-      button.querySelector(".sticker-price").textContent =
-        purchased ? "Разместить" : sticker.price + " очков";
+
+      button.classList.toggle(
+        "is-locked",
+        !purchased
+      );
+
+      button.querySelector(
+        ".sticker-lock"
+      ).hidden = purchased;
+
+      button.querySelector(
+        ".sticker-price"
+      ).textContent = purchased
+        ? "Разместить"
+        : sticker.price + " ОГЭшек";
 
       button.title = purchased
         ? "Разместить стикер"
-        : "Купить за " + sticker.price + " очков";
+        : "Купить за " + sticker.price + " ОГЭшек";
 
-      button.setAttribute("aria-label",
-        "Стикер " + sticker.id + ". " + button.title);
+      button.setAttribute(
+        "aria-label",
+        "Стикер " +
+        sticker.id +
+        ". " +
+        button.title
+      );
     }
   }
 
@@ -1190,8 +2047,11 @@ input:focus { outline: 2px solid #9bd8e4; }
 
     if (owned.has(sticker.id)) {
       selectedSticker = sticker;
+
       setShop(false);
+
       $("placement").hidden = false;
+
       return;
     }
 
@@ -1199,29 +2059,49 @@ input:focus { outline: 2px solid #9bd8e4; }
     controls();
 
     try {
-      const result = await rpc("mp_buy_sticker", {
-        ...playerArgs(), p_sticker: sticker.id
-      });
+      const result = await rpc(
+        "mp_buy_sticker",
+        {
+          ...playerArgs(),
+          p_sticker: sticker.id
+        }
+      );
 
       setBalance(result.score);
 
       if (result.status === "insufficient") {
         button.classList.remove("denied");
+
         void button.offsetWidth;
+
         button.classList.add("denied");
-        setTimeout(() => button.classList.remove("denied"), 500);
-        shopMessage("Недостаточно очков для покупки.", true);
+
+        setTimeout(() => {
+          button.classList.remove("denied");
+        }, 500);
+
+        shopMessage(
+          "Недостаточно ОГЭшек для покупки.",
+          true
+        );
+
       } else {
         owned.add(sticker.id);
+
         renderShopState();
-        shopMessage(result.status === "bought"
-          ? "Стикер куплен! Нажмите на него ещё раз, чтобы разместить."
-          : "Стикер уже куплен. Нажмите ещё раз, чтобы разместить.");
+
+        shopMessage(
+          result.status === "bought"
+            ? "Стикер куплен! Нажмите ещё раз, чтобы разместить."
+            : "Стикер уже куплен. Можно разместить."
+        );
       }
 
       refresh();
+
     } catch (error) {
       shopMessage(error.message, true);
+
     } finally {
       busy = false;
       controls();
@@ -1230,161 +2110,282 @@ input:focus { outline: 2px solid #9bd8e4; }
 
   async function redeem(event) {
     event.preventDefault();
+
     if (!identity || busy || watching) return;
 
     const code = $("codeInput").value.trim();
+
     if (!code) return;
 
     busy = true;
+
     controls();
     shopMessage("Проверяем код…");
 
     try {
-      const result = await rpc("mp_redeem", {
-        ...playerArgs(), p_code: code
-      });
+      const result = await rpc(
+        "mp_redeem",
+        {
+          ...playerArgs(),
+          p_code: code
+        }
+      );
 
+      // Код пополняет только ОГЭшки.
       setBalance(result.score);
+
       $("codeInput").value = "";
-      shopMessage("Начислено +" + result.added + " очков!");
+
+      shopMessage(
+        "Начислено +" +
+        result.added +
+        " ОГЭшек!"
+      );
+
       refresh();
+
     } catch (error) {
       shopMessage(error.message, true);
+
     } finally {
       busy = false;
       controls();
     }
   }
 
-  /* Личные позиции: не отправляются другим игрокам. */
-
   function positionKey() {
-    return identity
-      ? "mp-positions-v1:" + JSON.stringify([identity.room, identity.name])
-      : null;
+    return localKey("mp-positions-v1:");
   }
 
   function savePositions() {
-    const key = positionKey();
-    if (!key) return;
+    if (!identity) return;
 
-    const positions = [...$("stickerLayer").children].map(element => ({
+    const positions = [
+      ...$("stickerLayer").children
+    ].map(element => ({
       id: Number(element.dataset.id),
       left: parseFloat(element.style.left) || 0,
       top: parseFloat(element.style.top) || 0
     }));
 
     try {
-      localStorage.setItem(key, JSON.stringify(positions));
+      localStorage.setItem(
+        positionKey(),
+        JSON.stringify(positions)
+      );
     } catch (error) {
-      shopMessage("Браузер не разрешил сохранить позиции стикеров.", true);
+      console.error(error);
+
+      shopMessage(
+        "Не удалось сохранить позиции стикеров.",
+        true
+      );
     }
   }
 
   function moveSticker(element, left, top) {
-    element.style.left =
-      Math.max(0, Math.min(left, Math.max(0, innerWidth - 88))) + "px";
-    element.style.top =
-      Math.max(0, Math.min(top, Math.max(0, innerHeight - 88))) + "px";
+    element.style.left = Math.max(
+      0,
+      Math.min(
+        left,
+        Math.max(0, innerWidth - 88)
+      )
+    ) + "px";
+
+    element.style.top = Math.max(
+      0,
+      Math.min(
+        top,
+        Math.max(0, innerHeight - 88)
+      )
+    ) + "px";
   }
 
   function loadPositions() {
     $("stickerLayer").replaceChildren();
+
     stickerZ = 1;
+
     if (!identity) return;
 
     let positions = [];
 
     try {
-      positions = JSON.parse(localStorage.getItem(positionKey()) || "[]");
-    } catch {}
+      positions = JSON.parse(
+        localStorage.getItem(
+          positionKey()
+        ) || "[]"
+      );
+    } catch (error) {
+      console.error(error);
+    }
 
     if (!Array.isArray(positions)) return;
 
     for (const position of positions) {
-      const sticker = STICKERS.find(item => item.id === Number(position.id));
+      const sticker = STICKERS.find(
+        item => item.id === Number(position.id)
+      );
+
       if (!sticker) continue;
 
-      placeSticker(sticker,
+      placeSticker(
+        sticker,
         Number(position.left) || 0,
         Number(position.top) || 0,
-        false);
+        false
+      );
     }
   }
 
-  function placeSticker(sticker, left, top, save = true) {
+  function placeSticker(
+    sticker,
+    left,
+    top,
+    save = true
+  ) {
     const element = document.createElement("div");
+
     element.className = "placed-sticker";
     element.dataset.id = sticker.id;
     element.style.zIndex = String(stickerZ++);
 
     const image = document.createElement("img");
+
     image.src = sticker.image;
     image.alt = "Стикер " + sticker.id;
     image.draggable = false;
 
     const remove = document.createElement("button");
+
+    remove.type = "button";
     remove.className = "remove-sticker";
     remove.textContent = "×";
-    remove.setAttribute("aria-label", "Убрать стикер");
 
-    remove.onpointerdown = event => event.stopPropagation();
-    remove.onclick = () => {
+    remove.setAttribute(
+      "aria-label",
+      "Убрать стикер"
+    );
+
+    remove.addEventListener(
+      "pointerdown",
+      event => event.stopPropagation()
+    );
+
+    remove.addEventListener("click", () => {
       element.remove();
       savePositions();
-    };
+    });
 
     element.append(image, remove);
+
     $("stickerLayer").append(element);
+
     moveSticker(element, left, top);
 
     if (save) savePositions();
 
     let drag = null;
 
-    element.onpointerdown = event => {
-      if (event.target.closest("button") || event.button !== 0) return;
-      event.preventDefault();
+    element.addEventListener(
+      "pointerdown",
+      event => {
+        if (
+          event.target.closest("button") ||
+          event.button !== 0 ||
+          !event.isPrimary
+        ) {
+          return;
+        }
 
-      document.querySelectorAll(".placed-sticker.selected")
-        .forEach(item => item.classList.remove("selected"));
+        event.preventDefault();
 
-      element.classList.add("selected");
-      element.style.zIndex = String(stickerZ++);
+        document.querySelectorAll(
+          ".placed-sticker.selected"
+        ).forEach(item => {
+          item.classList.remove("selected");
+        });
 
-      const rect = element.getBoundingClientRect();
-      drag = {
-        id: event.pointerId,
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-      };
+        element.classList.add("selected");
 
-      element.setPointerCapture(event.pointerId);
-    };
+        element.style.zIndex =
+          String(stickerZ++);
 
-    element.onpointermove = event => {
-      if (!drag || drag.id !== event.pointerId) return;
-      moveSticker(element, event.clientX - drag.x, event.clientY - drag.y);
-    };
+        const rect =
+          element.getBoundingClientRect();
+
+        drag = {
+          id: event.pointerId,
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top
+        };
+
+        element.setPointerCapture(
+          event.pointerId
+        );
+      }
+    );
+
+    element.addEventListener(
+      "pointermove",
+      event => {
+        if (
+          !drag ||
+          drag.id !== event.pointerId
+        ) {
+          return;
+        }
+
+        moveSticker(
+          element,
+          event.clientX - drag.x,
+          event.clientY - drag.y
+        );
+      }
+    );
 
     function endDrag(event) {
-      if (!drag || drag.id !== event.pointerId) return;
+      if (
+        !drag ||
+        drag.id !== event.pointerId
+      ) {
+        return;
+      }
+
       drag = null;
+
       savePositions();
 
-      if (element.hasPointerCapture(event.pointerId)) {
-        element.releasePointerCapture(event.pointerId);
+      if (
+        element.hasPointerCapture(
+          event.pointerId
+        )
+      ) {
+        element.releasePointerCapture(
+          event.pointerId
+        );
       }
     }
 
-    element.onpointerup = endDrag;
-    element.onpointercancel = endDrag;
-    element.onlostpointercapture = () => {
-      if (drag) {
-        drag = null;
-        savePositions();
+    element.addEventListener(
+      "pointerup",
+      endDrag
+    );
+
+    element.addEventListener(
+      "pointercancel",
+      endDrag
+    );
+
+    element.addEventListener(
+      "lostpointercapture",
+      () => {
+        if (drag) {
+          drag = null;
+          savePositions();
+        }
       }
-    };
+    );
   }
 
   function cancelPlacement() {
@@ -1395,111 +2396,289 @@ input:focus { outline: 2px solid #9bd8e4; }
   async function init() {
     try {
       if (!window.supabase?.createClient) {
-        throw new Error("Не загрузилась библиотека Supabase.");
+        throw new Error(
+          "Не загрузилась библиотека Supabase."
+        );
       }
 
-      db = window.supabase.createClient(URL, KEY);
+      db = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+      const testKey = "mp-storage-test";
+
+      localStorage.setItem(testKey, "1");
+      localStorage.removeItem(testKey);
+
       ready = true;
 
       let previous = null;
+
       try {
-        previous = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-      } catch {}
+        previous = JSON.parse(
+          localStorage.getItem(
+            SESSION_KEY
+          ) || "null"
+        );
+      } catch (error) {
+        console.error(error);
+      }
 
-      selectedAvatar = AVATARS[previous?.avatar] ? previous.avatar : "luigi";
+      selectedAvatar = AVATARS[previous?.avatar]
+        ? previous.avatar
+        : "luigi";
 
-      if (typeof previous?.room === "string") {
+      if (
+        typeof previous?.room === "string"
+      ) {
         $("room").value = previous.room;
       }
 
-      if (previous?.mode === "player" && previous.name && previous.room) {
-        identity = { name: previous.name, room: previous.room };
+      if (
+        previous?.mode === "player" &&
+        typeof previous.name === "string" &&
+        previous.name.trim() &&
+        typeof previous.room === "string" &&
+        previous.room.trim()
+      ) {
+        identity = {
+          name: previous.name,
+          room: previous.room
+        };
+
         activeRoom = identity.room;
+
         $("name").value = identity.name;
+
+        loadSound();
         loadPositions();
+
+        queueSoundState();
         startUpdates();
 
         $("status").textContent =
-          "Вы вошли как «" + identity.name + "». Счёт сохранён.";
-      } else if (previous?.mode === "watch" && previous.room) {
+          pendingTransfer
+            ? "Есть незавершённый перевод. Нажмите «Повторить перевод»."
+            : "Вы вошли как «" +
+              identity.name +
+              "». ОГЭшки сохранены.";
+
+      } else if (
+        previous?.mode === "watch" &&
+        previous.room
+      ) {
         watching = true;
         activeRoom = previous.room;
+
         startUpdates();
-        $("status").textContent = "Табло комнаты";
+
+        $("status").textContent =
+          "Табло звуковых очков";
+
       } else {
-        $("status").textContent = "Введите имя и нажмите «Присоединиться».";
+        $("status").textContent =
+          "Введите имя и нажмите «Присоединиться».";
       }
+
     } catch (error) {
       ready = false;
-      errorMessage(error);
-      $("status").textContent = "Не удалось подготовить игру.";
-    }
 
-    controls();
+      showError(error);
+
+      $("status").textContent =
+        "Не удалось подготовить игру.";
+
+    } finally {
+      controls();
+    }
   }
 
-  $("name").oninput = controls;
-  $("join").onclick = join;
-  $("start").onclick = start;
-  $("stop").onclick = stop;
-  $("logout").onclick = leave;
-  $("watch").onclick = toggleWatch;
+  $("name").addEventListener(
+    "input",
+    controls
+  );
 
-  $("stickerToggle").onclick = () => {
-    setShop(!$("shop").classList.contains("is-open"));
-    refresh();
-  };
+  $("join").addEventListener(
+    "click",
+    join
+  );
 
-  $("shopClose").onclick = () => setShop(false);
-  $("codeForm").onsubmit = redeem;
-  $("cancelPlacement").onclick = cancelPlacement;
+  $("start").addEventListener(
+    "click",
+    start
+  );
 
-  $("placement").onclick = event => {
-    if (event.target.closest(".placement-hint")) return;
-    if (!identity || !selectedSticker || !owned.has(selectedSticker.id)) return;
+  $("stop").addEventListener(
+    "click",
+    stopAndBank
+  );
 
-    placeSticker(selectedSticker, event.clientX - 44, event.clientY - 44);
-    cancelPlacement();
-  };
+  $("logout").addEventListener(
+    "click",
+    leave
+  );
 
-  $("clearStickers").onclick = () => {
-    if (!identity) return;
-    $("stickerLayer").replaceChildren();
-    savePositions();
-    shopMessage("Размещённые стикеры убраны. Покупки сохранены.");
-  };
+  $("watch").addEventListener(
+    "click",
+    toggleWatch
+  );
 
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
+  $("stickerToggle").addEventListener(
+    "click",
+    () => {
+      setShop(
+        !$("shop").classList.contains(
+          "is-open"
+        )
+      );
+
+      refresh();
+    }
+  );
+
+  $("shopClose").addEventListener(
+    "click",
+    () => setShop(false)
+  );
+
+  $("codeForm").addEventListener(
+    "submit",
+    redeem
+  );
+
+  $("cancelPlacement").addEventListener(
+    "click",
+    cancelPlacement
+  );
+
+  $("placement").addEventListener(
+    "click",
+    event => {
+      if (
+        event.target.closest(
+          ".placement-hint"
+        )
+      ) {
+        return;
+      }
+
+      if (
+        !identity ||
+        !selectedSticker ||
+        !owned.has(selectedSticker.id)
+      ) {
+        return;
+      }
+
+      placeSticker(
+        selectedSticker,
+        event.clientX - 44,
+        event.clientY - 44
+      );
+
       cancelPlacement();
-      setShop(false);
     }
-  });
+  );
 
-  document.addEventListener("pointerdown", event => {
-    if (event.target.closest(".placed-sticker")) return;
-    document.querySelectorAll(".placed-sticker.selected")
-      .forEach(item => item.classList.remove("selected"));
-  });
+  $("clearStickers").addEventListener(
+    "click",
+    () => {
+      if (!identity) return;
 
-  window.addEventListener("resize", () => {
-    for (const element of $("stickerLayer").children) {
-      moveSticker(element,
-        parseFloat(element.style.left) || 0,
-        parseFloat(element.style.top) || 0);
+      $("stickerLayer").replaceChildren();
+
+      savePositions();
+
+      shopMessage(
+        "Размещённые стикеры убраны. Покупки сохранены."
+      );
     }
-  });
+  );
 
-  window.addEventListener("pagehide", () => {
-    savePositions();
-    stop();
-    clearTimeout(soundRetry);
-    if (db) stopUpdates();
-  });
+  document.addEventListener(
+    "keydown",
+    event => {
+      if (event.key === "Escape") {
+        cancelPlacement();
+        setShop(false);
+      }
+    }
+  );
 
-  window.addEventListener("pageshow", event => {
-    if (event.persisted && ready && activeRoom) startUpdates();
-  });
+  document.addEventListener(
+    "pointerdown",
+    event => {
+      if (
+        event.target.closest(
+          ".placed-sticker"
+        )
+      ) {
+        return;
+      }
+
+      document.querySelectorAll(
+        ".placed-sticker.selected"
+      ).forEach(item => {
+        item.classList.remove("selected");
+      });
+    }
+  );
+
+  window.addEventListener(
+    "resize",
+    () => {
+      for (
+        const element of
+        $("stickerLayer").children
+      ) {
+        moveSticker(
+          element,
+          parseFloat(element.style.left) || 0,
+          parseFloat(element.style.top) || 0
+        );
+      }
+    }
+  );
+
+  window.addEventListener(
+    "pagehide",
+    () => {
+      savePositions();
+
+      if (identity) {
+        try {
+          saveSound();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      stopMicrophone();
+
+      clearTimeout(stateTimer);
+
+      if (db) stopUpdates();
+
+      // Закрытие страницы не переводит очки.
+      // Перевод выполняется кнопкой «Стоп».
+    }
+  );
+
+  window.addEventListener(
+    "pageshow",
+    event => {
+      if (
+        event.persisted &&
+        ready &&
+        activeRoom
+      ) {
+        queueSoundState();
+        startUpdates();
+        controls();
+      }
+    }
+  );
 
   renderChoices();
   buildShop();
