@@ -532,7 +532,7 @@ input:focus {
     #ff4d4d
   );
 
-  background-size: 320% 320%;
+  background-size: 100% 100%;
 
   mix-blend-mode: multiply;
 
@@ -551,16 +551,18 @@ input:focus {
   -webkit-mask-size: contain;
   mask-size: contain;
 
-  animation: rainbow-flow 7s linear infinite;
+  animation: rainbow-cycle 10s linear infinite;
 }
 
-@keyframes rainbow-flow {
+/* Плавный бесшовный переход оттенков:
+   фиолетовый плавно возвращается к красному. */
+@keyframes rainbow-cycle {
   from {
-    background-position: 0% 0%;
+    filter: hue-rotate(0deg);
   }
 
   to {
-    background-position: 100% 100%;
+    filter: hue-rotate(360deg);
   }
 }
 
@@ -608,24 +610,39 @@ input:focus {
   border-radius: 6px;
 }
 
-.remove-sticker {
+.remove-sticker,
+.resize-sticker {
   position: absolute;
-  top: -6px;
-  right: -6px;
   display: none;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   border: 1px solid #dce8ee;
   border-radius: 50%;
   background: #fff;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.remove-sticker {
+  top: -6px;
+  right: -6px;
   color: #bd3030;
-  font-size: 19px;
+}
+
+.resize-sticker {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
 }
 
 .placed-sticker:hover .remove-sticker,
 .placed-sticker.selected .remove-sticker,
-.placed-sticker:focus-within .remove-sticker {
+.placed-sticker:focus-within .remove-sticker,
+.placed-sticker:hover .resize-sticker,
+.placed-sticker.selected .resize-sticker,
+.placed-sticker:focus-within .resize-sticker {
   display: block;
 }
 
@@ -843,7 +860,7 @@ input:focus {
   <p class="hint">
     Первое нажатие покупает стикер.
     Следующее позволяет разместить его без повторной оплаты.
-    Расположение сохраняется на сервере после перемещения.
+    Крестик удаляет стикер, а кнопка внизу справа меняет его размер.
   </p>
 </aside>
 
@@ -2467,7 +2484,9 @@ input:focus {
       left:
         parseFloat(element.style.left) || 0,
       top:
-        parseFloat(element.style.top) || 0
+        parseFloat(element.style.top) || 0,
+      size:
+        parseFloat(element.style.width) || 88
     }));
   }
 
@@ -2587,6 +2606,7 @@ input:focus {
       const id = Number(position.id);
       const left = Number(position.left);
       const top = Number(position.top);
+      const size = Number(position.size) || 88;
 
       if (
         !owned.has(id) ||
@@ -2606,6 +2626,7 @@ input:focus {
         sticker,
         left,
         top,
+        size,
         false
       );
     }
@@ -2631,11 +2652,14 @@ input:focus {
     left,
     top
   ) {
+    const size =
+      parseFloat(element.style.width) || 88;
+
     element.style.left = Math.max(
       0,
       Math.min(
         left,
-        Math.max(0, innerWidth - 88)
+        Math.max(0, innerWidth - size)
       )
     ) + "px";
 
@@ -2643,15 +2667,35 @@ input:focus {
       0,
       Math.min(
         top,
-        Math.max(0, innerHeight - 88)
+        Math.max(0, innerHeight - size)
       )
     ) + "px";
+  }
+
+  function resizeSticker(
+    element,
+    size
+  ) {
+    const value = Math.max(
+      40,
+      Math.min(400, size)
+    );
+
+    element.style.width = value + "px";
+    element.style.height = value + "px";
+
+    moveSticker(
+      element,
+      parseFloat(element.style.left) || 0,
+      parseFloat(element.style.top) || 0
+    );
   }
 
   function placeSticker(
     sticker,
     left,
     top,
+    size = 88,
     save = true
   ) {
     const element =
@@ -2704,7 +2748,24 @@ input:focus {
       "Убрать стикер"
     );
 
+    const resize =
+      document.createElement("button");
+
+    resize.type = "button";
+    resize.className = "resize-sticker";
+    resize.textContent = "⤢";
+
+    resize.setAttribute(
+      "aria-label",
+      "Изменить размер стикера"
+    );
+
     remove.addEventListener(
+      "pointerdown",
+      event => event.stopPropagation()
+    );
+
+    resize.addEventListener(
       "pointerdown",
       event => event.stopPropagation()
     );
@@ -2719,10 +2780,11 @@ input:focus {
       }
     );
 
-    element.append(remove);
+    element.append(remove, resize);
 
     $("stickerLayer").append(element);
 
+    resizeSticker(element, size);
     moveSticker(element, left, top);
 
     if (save) {
@@ -2730,6 +2792,7 @@ input:focus {
     }
 
     let drag = null;
+    let resizing = false;
 
     element.addEventListener(
       "pointerdown",
@@ -2770,6 +2833,81 @@ input:focus {
           event.pointerId
         );
       }
+    );
+
+    resize.addEventListener(
+      "pointerdown",
+      event => {
+        if (
+          busy ||
+          !identity ||
+          event.button !== 0 ||
+          !event.isPrimary
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        resizing = true;
+
+        resize.setPointerCapture(
+          event.pointerId
+        );
+      }
+    );
+
+    resize.addEventListener(
+      "pointermove",
+      event => {
+        if (
+          !resizing ||
+          event.pointerId !==
+          event.pointerId
+        ) {
+          return;
+        }
+
+        const rect =
+          element.getBoundingClientRect();
+
+        resizeSticker(
+          element,
+          Math.max(
+            event.clientX - rect.left,
+            event.clientY - rect.top
+          )
+        );
+      }
+    );
+
+    function endResize(event) {
+      if (!resizing) return;
+
+      resizing = false;
+
+      changedLayout();
+
+      if (
+        resize.hasPointerCapture(
+          event.pointerId
+        )
+      ) {
+        resize.releasePointerCapture(
+          event.pointerId
+        );
+      }
+    }
+
+    resize.addEventListener(
+      "pointerup",
+      endResize
+    );
+
+    resize.addEventListener(
+      "pointercancel",
+      endResize
     );
 
     element.addEventListener(
