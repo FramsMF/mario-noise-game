@@ -419,7 +419,7 @@ input:focus {
 .sticker-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(4, 130px);
+  grid-template-rows: repeat(3, 130px);
   gap: 10px;
 }
 
@@ -435,6 +435,7 @@ input:focus {
   border-radius: 14px;
   background: #fff;
   color: var(--ink);
+  overflow: hidden;
 }
 
 .sticker-cell img {
@@ -503,6 +504,72 @@ input:focus {
   }
 }
 
+/* Радужный стикер */
+
+.rainbow-sticker {
+  position: relative;
+  overflow: hidden;
+}
+
+.rainbow-sticker img {
+  filter: grayscale(1) contrast(1.05);
+}
+
+.rainbow-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background: linear-gradient(
+    115deg,
+    #ff4d4d,
+    #ffb84d,
+    #ffe14d,
+    #7ce07c,
+    #4dd2ff,
+    #7a7aff,
+    #d24dff,
+    #ff4d4d
+  );
+
+  background-size: 320% 320%;
+
+  mix-blend-mode: multiply;
+
+  -webkit-mask-image: var(--sticker-mask);
+  mask-image: var(--sticker-mask);
+
+  -webkit-mask-mode: luminance;
+  mask-mode: luminance;
+
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+  animation: rainbow-flow 7s linear infinite;
+}
+
+@keyframes rainbow-flow {
+  from {
+    background-position: 0% 0%;
+  }
+
+  to {
+    background-position: 100% 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rainbow-overlay {
+    animation: none;
+  }
+}
+
 .shop-secondary {
   width: 100%;
   margin-top: 12px;
@@ -535,6 +602,10 @@ input:focus {
   height: 100%;
   object-fit: contain;
   pointer-events: none;
+}
+
+.placed-sticker .rainbow-overlay {
+  border-radius: 6px;
 }
 
 .remove-sticker {
@@ -822,8 +893,8 @@ input:focus {
     yoshi: {
       label: "Йоши",
       color: "#79d8a0",
-      closed: "./yoshi2.png",
-      open: "./yoshi2.png"
+      closed: "./Yoshi2.png",
+      open: "./Yoshi.png"
     }
   };
 
@@ -832,7 +903,13 @@ input:focus {
     { id: 2, image: "./2.png", price: 100 },
     { id: 3, image: "./3.png", price: 150 },
     { id: 4, image: "./4.png", price: 200 },
-    { id: 5, image: "./5.png", price: 2000 }
+    { id: 5, image: "./5.png", price: 500 },
+    {
+      id: 6,
+      image: "./6.png",
+      price: 2000,
+      rainbow: true
+    }
   ];
 
   const $ = id => document.getElementById(id);
@@ -890,7 +967,9 @@ input:focus {
       return crypto.randomUUID();
     }
 
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    const bytes = crypto.getRandomValues(
+      new Uint8Array(16)
+    );
 
     bytes[6] = (bytes[6] & 15) | 64;
     bytes[8] = (bytes[8] & 63) | 128;
@@ -976,8 +1055,13 @@ input:focus {
       localStorage.setItem(
         SESSION_KEY,
         JSON.stringify({
-          name: identity?.name || $("name").value.trim(),
-          room: activeRoom || $("room").value.trim() || "party-1",
+          name: identity?.name ||
+            $("name").value.trim(),
+
+          room: activeRoom ||
+            $("room").value.trim() ||
+            "party-1",
+
           avatar: selectedAvatar
         })
       );
@@ -1006,7 +1090,9 @@ input:focus {
   }
 
   function loadSound() {
-    const saved = readLocal(localKey("mp-sound-v2:"));
+    const saved = readLocal(
+      localKey("mp-sound-v2:")
+    );
 
     soundPoints = Math.max(
       0,
@@ -1042,14 +1128,18 @@ input:focus {
   }
 
   function controls() {
-    const logged = Boolean(identity) && !watching;
+    const logged =
+      Boolean(identity) && !watching;
 
     $("nameField").hidden = watching;
     $("avatarSection").hidden = watching;
     $("actions").hidden = watching;
 
-    $("name").disabled = !ready || busy || logged;
-    $("room").disabled = !ready || busy || logged || watching;
+    $("name").disabled =
+      !ready || busy || logged;
+
+    $("room").disabled =
+      !ready || busy || logged || watching;
 
     $("join").hidden = logged;
     $("join").disabled = !ready || busy;
@@ -1062,7 +1152,8 @@ input:focus {
       busy || running || Boolean(pendingTransfer);
 
     $("stop").disabled =
-      busy || (!running && soundPoints === 0);
+      busy ||
+      (!running && soundPoints === 0);
 
     $("stop").textContent = pendingTransfer
       ? "Повторить перевод"
@@ -1070,7 +1161,8 @@ input:focus {
 
     $("logout").disabled = busy || running;
 
-    $("watch").disabled = !ready || busy || running;
+    $("watch").disabled =
+      !ready || busy || running;
 
     $("watch").textContent = watching
       ? "Вернуться к входу"
@@ -1088,21 +1180,29 @@ input:focus {
     $("clearStickers").disabled =
       busy || !logged || !layoutKnown;
 
-    $("retryLayout").disabled = busy || !logged;
+    $("retryLayout").disabled =
+      busy || !logged;
 
-    for (const button of document.querySelectorAll(".choice")) {
-      button.disabled = !ready || busy || logged;
+    for (const button of
+      document.querySelectorAll(".choice")
+    ) {
+      button.disabled =
+        !ready || busy || logged;
 
       button.setAttribute(
         "aria-pressed",
         String(
-          button.dataset.avatar === selectedAvatar
+          button.dataset.avatar ===
+          selectedAvatar
         )
       );
     }
 
-    for (const button of shopButtons.values()) {
-      button.disabled = busy || !logged || !layoutKnown;
+    for (const button of
+      shopButtons.values()
+    ) {
+      button.disabled =
+        busy || !logged || !layoutKnown;
     }
 
     $("roomTitle").hidden = !activeRoom;
@@ -1112,28 +1212,36 @@ input:focus {
   }
 
   function renderChoices() {
-    for (const [id, avatar] of Object.entries(AVATARS)) {
-      const button = document.createElement("button");
+    for (const [id, avatar] of
+      Object.entries(AVATARS)
+    ) {
+      const button =
+        document.createElement("button");
 
       button.type = "button";
       button.className = "choice";
       button.dataset.avatar = id;
 
-      const image = document.createElement("img");
+      const image =
+        document.createElement("img");
 
       image.src = avatar.closed;
       image.alt = avatar.label;
 
-      const text = document.createElement("span");
+      const text =
+        document.createElement("span");
 
       text.textContent = avatar.label;
 
       button.append(image, text);
 
-      button.addEventListener("click", () => {
-        selectedAvatar = id;
-        controls();
-      });
+      button.addEventListener(
+        "click",
+        () => {
+          selectedAvatar = id;
+          controls();
+        }
+      );
 
       $("choices").append(button);
     }
@@ -1153,37 +1261,58 @@ input:focus {
   }
 
   function createCard(player) {
-    const item = document.createElement("li");
+    const item =
+      document.createElement("li");
+
     item.className = "player";
 
-    const score = document.createElement("div");
+    const score =
+      document.createElement("div");
+
     score.className = "score";
 
-    const caption = document.createElement("p");
+    const caption =
+      document.createElement("p");
+
     caption.className = "score-caption";
     caption.textContent = "Очки за звук";
 
-    const stage = document.createElement("div");
+    const stage =
+      document.createElement("div");
+
     stage.className = "stage";
 
-    const track = document.createElement("div");
+    const track =
+      document.createElement("div");
+
     track.className = "track";
 
-    const inner = document.createElement("div");
+    const inner =
+      document.createElement("div");
+
     inner.className = "track-inner";
 
-    const fill = document.createElement("div");
+    const fill =
+      document.createElement("div");
+
     fill.className = "fill";
 
-    const avatar = document.createElement("div");
+    const avatar =
+      document.createElement("div");
+
     avatar.className = "avatar";
 
-    const normal = document.createElement("img");
-    const talking = document.createElement("img");
+    const normal =
+      document.createElement("img");
+
+    const talking =
+      document.createElement("img");
 
     talking.hidden = true;
 
-    const name = document.createElement("div");
+    const name =
+      document.createElement("div");
+
     name.className = "name";
     name.textContent = player.name;
     name.title = player.name;
@@ -1211,18 +1340,24 @@ input:focus {
       openFailed: false
     };
 
-    talking.addEventListener("error", () => {
-      card.openFailed = true;
-      talking.hidden = true;
-      normal.hidden = false;
-    });
+    talking.addEventListener(
+      "error",
+      () => {
+        card.openFailed = true;
+        talking.hidden = true;
+        normal.hidden = false;
+      }
+    );
 
-    normal.addEventListener("error", () => {
-      showError(new Error(
-        "Не найдена картинка: " +
-        normal.getAttribute("src")
-      ));
-    });
+    normal.addEventListener(
+      "error",
+      () => {
+        showError(new Error(
+          "Не найдена картинка: " +
+          normal.getAttribute("src")
+        ));
+      }
+    );
 
     return card;
   }
@@ -1234,7 +1369,8 @@ input:focus {
 
     if (!card) return;
 
-    card.score.textContent = String(soundPoints);
+    card.score.textContent =
+      String(soundPoints);
 
     card.fill.style.height =
       Math.max(
@@ -1245,11 +1381,10 @@ input:focus {
     setMouth(card, loud);
   }
 
-  // Эта функция всегда обновляет табло.
-  // После входа она обязана скрыть пустую надпись.
   function renderPlayers(players) {
     const sorted = [...players].sort(
-      (a, b) => a.name.localeCompare(b.name, "ru")
+      (a, b) =>
+        a.name.localeCompare(b.name, "ru")
     );
 
     const names = new Set(
@@ -1302,7 +1437,8 @@ input:focus {
         ? soundPoints
         : Number(player.sound_score) || 0;
 
-      card.score.textContent = String(points);
+      card.score.textContent =
+        String(points);
 
       card.fill.style.height =
         Math.max(
@@ -1326,26 +1462,24 @@ input:focus {
       }
     });
 
-    // Главная исправленная часть:
-    // если игроки есть, надпись исчезает.
-    $("empty").hidden = sorted.length > 0;
+    $("empty").hidden =
+      sorted.length > 0;
 
     $("empty").textContent =
       "В этой комнате пока нет игроков";
   }
 
-  // Сразу показывает текущего игрока после входа.
   function showSelfImmediately() {
     if (!identity || watching) return;
 
-    const self = {
-      name: identity.name,
-      avatar: selectedAvatar,
-      is_loud: loud,
-      sound_score: soundPoints
-    };
-
-    renderPlayers([self]);
+    renderPlayers([
+      {
+        name: identity.name,
+        avatar: selectedAvatar,
+        is_loud: loud,
+        sound_score: soundPoints
+      }
+    ]);
   }
 
   async function refresh() {
@@ -1368,7 +1502,9 @@ input:focus {
     try {
       const { data, error } = await db
         .from("players")
-        .select("name,avatar,is_loud,sound_score")
+        .select(
+          "name,avatar,is_loud,sound_score"
+        )
         .eq("room", room);
 
       if (error) throw error;
@@ -1377,7 +1513,11 @@ input:focus {
 
       renderPlayers(data || []);
 
-      if (person && !watching && !busy) {
+      if (
+        person &&
+        !watching &&
+        !busy
+      ) {
         const stamp = walletVersion;
 
         const wallet = await rpc(
@@ -1449,7 +1589,8 @@ input:focus {
       refresh();
 
       if (stateDirty && !busy) {
-        flushSoundState().catch(console.error);
+        flushSoundState()
+          .catch(console.error);
       }
     }, 5000);
 
@@ -1464,7 +1605,8 @@ input:focus {
     clearTimeout(stateTimer);
 
     stateTimer = setTimeout(() => {
-      flushSoundState().catch(console.error);
+      flushSoundState()
+        .catch(console.error);
     }, 70);
   }
 
@@ -1475,12 +1617,20 @@ input:focus {
       return statePromise;
     }
 
-    if (!identity || watching || !db) {
+    if (
+      !identity ||
+      watching ||
+      !db
+    ) {
       return Promise.resolve();
     }
 
     statePromise = (async () => {
-      while (stateDirty && identity && !watching) {
+      while (
+        stateDirty &&
+        identity &&
+        !watching
+      ) {
         stateDirty = false;
 
         const person = { ...identity };
@@ -1514,7 +1664,12 @@ input:focus {
   }
 
   async function join() {
-    if (!ready || busy || identity || watching) {
+    if (
+      !ready ||
+      busy ||
+      identity ||
+      watching
+    ) {
       return;
     }
 
@@ -1541,11 +1696,14 @@ input:focus {
     controls();
 
     try {
-      await rpc("mp_join", {
-        p_room: room,
-        p_name: name,
-        p_avatar: selectedAvatar
-      });
+      await rpc(
+        "mp_join",
+        {
+          p_room: room,
+          p_name: name,
+          p_avatar: selectedAvatar
+        }
+      );
 
       const wallet = await rpc(
         "mp_wallet",
@@ -1566,7 +1724,6 @@ input:focus {
       loadSound();
       saveSession();
 
-      // Сразу показываем аватар и очки.
       showSelfImmediately();
 
       $("stickerLayer").replaceChildren();
@@ -1588,10 +1745,11 @@ input:focus {
       queueSoundState();
       startUpdates();
 
-      $("status").textContent = pendingTransfer
-        ? "Вы вошли. Нажмите «Повторить перевод»."
-        : "Вы вошли как «" + name +
-          "» в комнату «" + room + "».";
+      $("status").textContent =
+        pendingTransfer
+          ? "Вы вошли. Нажмите «Повторить перевод»."
+          : "Вы вошли как «" + name +
+            "» в комнату «" + room + "».";
 
     } catch (error) {
       stopUpdates();
@@ -1633,7 +1791,9 @@ input:focus {
     controls();
 
     try {
-      if (!navigator.mediaDevices?.getUserMedia) {
+      if (
+        !navigator.mediaDevices?.getUserMedia
+      ) {
         throw new Error(
           "Микрофон недоступен. Откройте сайт по HTTPS."
         );
@@ -1740,7 +1900,8 @@ input:focus {
         )
       );
 
-      $("meter").style.width = level + "%";
+      $("meter").style.width =
+        level + "%";
 
       const now = performance.now();
 
@@ -1805,7 +1966,10 @@ input:focus {
         console.error(error);
       }
 
-      if (soundPoints <= 0 && !pendingTransfer) {
+      if (
+        soundPoints <= 0 &&
+        !pendingTransfer
+      ) {
         $("status").textContent =
           "Микрофон выключен. Звуковых очков пока нет.";
 
@@ -1851,7 +2015,8 @@ input:focus {
         added + " ОГЭшек.";
 
       shopMessage(
-        "За звук начислено +" + added + " ОГЭшек."
+        "За звук начислено +" +
+        added + " ОГЭшек."
       );
 
     } catch (error) {
@@ -1870,7 +2035,9 @@ input:focus {
   }
 
   async function leave() {
-    if (busy || running || !identity) return false;
+    if (busy || running || !identity) {
+      return false;
+    }
 
     if (soundPoints > 0 || pendingTransfer) {
       $("status").textContent =
@@ -1987,7 +2154,8 @@ input:focus {
       watching = true;
 
       activeRoom =
-        $("room").value.trim() || "party-1";
+        $("room").value.trim() ||
+        "party-1";
 
       $("status").textContent =
         "Табло звуковых очков. ОГЭшки здесь не отображаются.";
@@ -2022,11 +2190,16 @@ input:focus {
   }
 
   function buildShop() {
-    for (let index = 0; index < 8; index++) {
+    for (
+      let index = 0;
+      index < 8;
+      index++
+    ) {
       const sticker = STICKERS[index];
 
       if (!sticker) {
-        const cell = document.createElement("div");
+        const cell =
+          document.createElement("div");
 
         cell.className =
           "sticker-cell sticker-empty";
@@ -2041,27 +2214,57 @@ input:focus {
         continue;
       }
 
-      const button = document.createElement("button");
+      const button =
+        document.createElement("button");
 
       button.type = "button";
       button.className = "sticker-cell";
 
-      const image = document.createElement("img");
+      if (sticker.rainbow) {
+        button.classList.add(
+          "rainbow-sticker"
+        );
+
+        button.style.setProperty(
+          "--sticker-mask",
+          'url("' + sticker.image + '")'
+        );
+      }
+
+      const image =
+        document.createElement("img");
 
       image.src = sticker.image;
       image.alt = "Стикер " + sticker.id;
       image.draggable = false;
 
-      const lock = document.createElement("span");
+      button.append(image);
+
+      if (sticker.rainbow) {
+        const overlay =
+          document.createElement("div");
+
+        overlay.className =
+          "rainbow-overlay";
+
+        button.append(overlay);
+      }
+
+      const lock =
+        document.createElement("span");
 
       lock.className = "sticker-lock";
-      lock.setAttribute("aria-hidden", "true");
+      lock.setAttribute(
+        "aria-hidden",
+        "true"
+      );
 
-      const price = document.createElement("span");
+      const price =
+        document.createElement("span");
 
       price.className = "sticker-price";
 
-      button.append(image, lock, price);
+      button.append(lock, price);
 
       button.addEventListener(
         "click",
@@ -2078,11 +2281,14 @@ input:focus {
 
   function renderShopState() {
     for (const sticker of STICKERS) {
-      const button = shopButtons.get(sticker.id);
+      const button = shopButtons.get(
+        sticker.id
+      );
 
       if (!button) continue;
 
-      const purchased = owned.has(sticker.id);
+      const purchased =
+        owned.has(sticker.id);
 
       button.classList.toggle(
         "is-locked",
@@ -2112,7 +2318,10 @@ input:focus {
     }
   }
 
-  async function stickerClick(sticker, button) {
+  async function stickerClick(
+    sticker,
+    button
+  ) {
     if (
       !identity ||
       busy ||
@@ -2124,7 +2333,8 @@ input:focus {
 
     if (owned.has(sticker.id)) {
       if (
-        $("stickerLayer").children.length >= 300
+        $("stickerLayer").children.length >=
+        300
       ) {
         shopMessage(
           "Можно разместить не более 300 стикеров.",
@@ -2159,7 +2369,9 @@ input:focus {
 
       setBalance(result.score);
 
-      if (result.status === "insufficient") {
+      if (
+        result.status === "insufficient"
+      ) {
         button.classList.remove("denied");
 
         void button.offsetWidth;
@@ -2203,9 +2415,12 @@ input:focus {
   async function redeem(event) {
     event.preventDefault();
 
-    if (!identity || busy || watching) return;
+    if (!identity || busy || watching) {
+      return;
+    }
 
-    const code = $("codeInput").value.trim();
+    const code =
+      $("codeInput").value.trim();
 
     if (!code) return;
 
@@ -2230,7 +2445,8 @@ input:focus {
       $("codeInput").value = "";
 
       shopMessage(
-        "Начислено +" + result.added + " ОГЭшек!"
+        "Начислено +" +
+        result.added + " ОГЭшек!"
       );
 
     } catch (error) {
@@ -2248,8 +2464,10 @@ input:focus {
       ...$("stickerLayer").children
     ].map(element => ({
       id: Number(element.dataset.id),
-      left: parseFloat(element.style.left) || 0,
-      top: parseFloat(element.style.top) || 0
+      left:
+        parseFloat(element.style.left) || 0,
+      top:
+        parseFloat(element.style.top) || 0
     }));
   }
 
@@ -2266,7 +2484,8 @@ input:focus {
       !layoutKnown ||
       !layoutDirty
     ) {
-      return layoutPromise || Promise.resolve();
+      return layoutPromise ||
+        Promise.resolve();
     }
 
     if (layoutPromise) {
@@ -2276,7 +2495,10 @@ input:focus {
     const person = { ...identity };
 
     layoutPromise = (async () => {
-      while (layoutDirty && samePerson(person)) {
+      while (
+        layoutDirty &&
+        samePerson(person)
+      ) {
         const revision = layoutRevision;
         const positions = currentPositions();
 
@@ -2359,7 +2581,9 @@ input:focus {
     $("stickerLayer").replaceChildren();
     stickerZ = 1;
 
-    for (const position of positions.slice(0, 300)) {
+    for (const position of
+      positions.slice(0, 300)
+    ) {
       const id = Number(position.id);
       const left = Number(position.left);
       const top = Number(position.top);
@@ -2402,7 +2626,11 @@ input:focus {
     }
   }
 
-  function moveSticker(element, left, top) {
+  function moveSticker(
+    element,
+    left,
+    top
+  ) {
     element.style.left = Math.max(
       0,
       Math.min(
@@ -2426,19 +2654,46 @@ input:focus {
     top,
     save = true
   ) {
-    const element = document.createElement("div");
+    const element =
+      document.createElement("div");
 
     element.className = "placed-sticker";
     element.dataset.id = sticker.id;
-    element.style.zIndex = String(stickerZ++);
+    element.style.zIndex =
+      String(stickerZ++);
 
-    const image = document.createElement("img");
+    if (sticker.rainbow) {
+      element.classList.add(
+        "rainbow-sticker"
+      );
+
+      element.style.setProperty(
+        "--sticker-mask",
+        'url("' + sticker.image + '")'
+      );
+    }
+
+    const image =
+      document.createElement("img");
 
     image.src = sticker.image;
     image.alt = "Стикер " + sticker.id;
     image.draggable = false;
 
-    const remove = document.createElement("button");
+    element.append(image);
+
+    if (sticker.rainbow) {
+      const overlay =
+        document.createElement("div");
+
+      overlay.className =
+        "rainbow-overlay";
+
+      element.append(overlay);
+    }
+
+    const remove =
+      document.createElement("button");
 
     remove.type = "button";
     remove.className = "remove-sticker";
@@ -2464,7 +2719,7 @@ input:focus {
       }
     );
 
-    element.append(image, remove);
+    element.append(remove);
 
     $("stickerLayer").append(element);
 
@@ -2620,7 +2875,9 @@ input:focus {
     setBalance(0);
 
     try {
-      if (!window.supabase?.createClient) {
+      if (
+        !window.supabase?.createClient
+      ) {
         throw new Error(
           "Не загрузилась библиотека Supabase."
         );
@@ -2631,7 +2888,9 @@ input:focus {
         SUPABASE_KEY
       );
 
-      const previous = readLocal(SESSION_KEY);
+      const previous = readLocal(
+        SESSION_KEY
+      );
 
       if (
         typeof previous?.name === "string"
@@ -2646,9 +2905,10 @@ input:focus {
         $("room").value = previous.room;
       }
 
-      selectedAvatar = AVATARS[previous?.avatar]
-        ? previous.avatar
-        : "luigi";
+      selectedAvatar =
+        AVATARS[previous?.avatar]
+          ? previous.avatar
+          : "luigi";
 
       ready = true;
 
@@ -2693,7 +2953,10 @@ input:focus {
     toggleWatch
   );
 
-  for (const input of [$("name"), $("room")]) {
+  for (const input of [
+    $("name"),
+    $("room")
+  ]) {
     input.addEventListener(
       "keydown",
       event => {
