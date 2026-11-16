@@ -419,7 +419,7 @@ input:focus {
 .sticker-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(3, 130px);
+  grid-template-rows: repeat(5, 130px);
   gap: 10px;
 }
 
@@ -504,8 +504,6 @@ input:focus {
   }
 }
 
-/* Радужный стикер */
-
 .rainbow-sticker {
   position: relative;
   overflow: hidden;
@@ -533,7 +531,6 @@ input:focus {
   );
 
   background-size: 100% 100%;
-
   mix-blend-mode: multiply;
 
   -webkit-mask-image: var(--sticker-mask);
@@ -554,8 +551,6 @@ input:focus {
   animation: rainbow-cycle 10s linear infinite;
 }
 
-/* Плавный бесшовный переход оттенков:
-   фиолетовый плавно возвращается к красному. */
 @keyframes rainbow-cycle {
   from {
     filter: hue-rotate(0deg);
@@ -860,7 +855,7 @@ input:focus {
   <p class="hint">
     Первое нажатие покупает стикер.
     Следующее позволяет разместить его без повторной оплаты.
-    Крестик удаляет стикер, а кнопка внизу справа меняет его размер.
+    GIF-стикеры анимируются в магазине и на странице.
   </p>
 </aside>
 
@@ -910,8 +905,8 @@ input:focus {
     yoshi: {
       label: "Йоши",
       color: "#79d8a0",
-      closed: "./yoshi2.png",
-      open: "./yoshi2.png"
+      closed: "./Yoshi2.png",
+      open: "./Yoshi.png"
     }
   };
 
@@ -926,7 +921,10 @@ input:focus {
       image: "./6.png",
       price: 2000,
       rainbow: true
-    }
+    },
+    { id: 7, image: "./7.gif", price: 255 },
+    { id: 8, image: "./8.gif", price: 100 },
+    { id: 9, image: "./9.gif", price: 699 }
   ];
 
   const $ = id => document.getElementById(id);
@@ -2209,7 +2207,7 @@ input:focus {
   function buildShop() {
     for (
       let index = 0;
-      index < 8;
+      index < 10;
       index++
     ) {
       const sticker = STICKERS[index];
@@ -2606,7 +2604,8 @@ input:focus {
       const id = Number(position.id);
       const left = Number(position.left);
       const top = Number(position.top);
-      const size = Number(position.size) || 88;
+      const size =
+        Number(position.size) || 88;
 
       if (
         !owned.has(id) ||
@@ -2861,13 +2860,7 @@ input:focus {
     resize.addEventListener(
       "pointermove",
       event => {
-        if (
-          !resizing ||
-          event.pointerId !==
-          event.pointerId
-        ) {
-          return;
-        }
+        if (!resizing) return;
 
         const rect =
           element.getBoundingClientRect();
